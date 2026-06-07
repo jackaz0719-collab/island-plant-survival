@@ -1,117 +1,127 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>無人島植物サバイバル</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <div id="app" class="app">
-    <section id="titleScreen" class="screen title-screen">
-      <div class="title-scene" aria-hidden="true">
-        <div class="pixel-sun"></div>
-        <div class="title-island">
-          <span class="title-palm trunk"></span>
-          <span class="title-palm leaf leaf-a"></span>
-          <span class="title-palm leaf leaf-b"></span>
-          <span class="title-palm leaf leaf-c"></span>
-        </div>
-      </div>
-      <div class="title-copy">
-        <p class="eyebrow">5 DAYS SURVIVAL</p>
-        <h1>無人島植物サバイバル</h1>
-        <p>植物を見きわめ、採って、食べる。5日間生き残れ。</p>
-        <button id="startButton" class="primary-button">ゲーム開始</button>
-        <div class="start-guide">
-          <p>矢印キー / WASD で移動</p>
-          <p>植物に近づくと調査できます</p>
-          <p>1日最大5種類まで採取できます</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="gameScreen" class="screen game-screen hidden">
-      <header class="hud">
-        <div class="hud-block">
-          <span class="hud-label">DAY</span>
-          <strong id="dayLabel">1 / 5</strong>
-        </div>
-        <div class="hud-block">
-          <span class="hud-label">HP</span>
-          <strong id="hpLabel" class="heart-row">♥ ♥ ♥</strong>
-        </div>
-        <div id="ecosystemHud" class="hud-block ecosystem-hud">
-          <span class="hud-label">環境</span>
-          <strong id="ecosystemLabel">生態系レベル：3</strong>
-        </div>
-        <div class="hud-block">
-          <span class="hud-label">COLLECT</span>
-          <strong id="collectLabel">0 / 5</strong>
-        </div>
-      </header>
-
-      <main class="play-layout">
-        <section class="map-panel" aria-label="無人島マップ">
-          <div id="map" class="map"></div>
-        </section>
-
-        <section class="map-guide" aria-label="操作ガイド">
-          <p id="phaseText" class="map-guide-description">島の植物を調査して採取しよう。</p>
-        </section>
-
-        <aside class="side-panel">
-          <div class="panel-section">
-            <h2>採取バッグ</h2>
-            <ul id="bagList" class="bag-list"></ul>
-            <button id="finishExploreButton" class="danger-button">採取をやめる</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>無人島植物サバイバル</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <section id="titleScreen" class="screen title-screen">
+        <div class="title-scene" aria-hidden="true">
+          <div class="pixel-sun"></div>
+          <div class="title-island">
+            <span class="title-palm trunk"></span>
+            <span class="title-palm leaf leaf-a"></span>
+            <span class="title-palm leaf leaf-b"></span>
+            <span class="title-palm leaf leaf-c"></span>
           </div>
-
-          <div id="plantInspector" class="panel-section inspector empty">
-            <h2>植物調査</h2>
-            <div id="plantImageBox" class="plant-image-box hidden"></div>
-            <h3 id="plantName">近くに採取可能な植物はありません</h3>
-            <p id="plantDescription">植物に近づくと調査できます。</p>
-            <button id="collectButton" class="secondary-button" disabled>Enterで採取</button>
-          </div>
-        </aside>
-      </main>
-    </section>
-
-    <section id="nightScreen" class="screen night-screen hidden">
-      <div class="night-panel">
-        <p class="eyebrow">NIGHT PHASE</p>
-        <h2 id="nightTitle">夜フェーズ</h2>
-        <p id="nightText">食べる植物を1種類選んでください。</p>
-        <div id="nightChoices" class="choice-grid"></div>
-      </div>
-    </section>
-
-    <section id="dayResultScreen" class="screen day-result-screen hidden">
-      <div class="day-result-panel">
-        <p class="eyebrow">DAY RESULT</p>
-        <h2 id="dayResultTitle">今日の結果</h2>
-        <div class="day-result-content">
-          <div id="dayResultImageBox" class="day-result-image-box"></div>
-          <div id="dayResultDetails" class="day-result-details"></div>
         </div>
-        <p class="day-result-guide">Enter または Space キーで次へ</p>
-        <button id="dayResultContinueButton" class="primary-button">次へ</button>
-      </div>
-    </section>
+        <div class="title-copy">
+          <p class="eyebrow">5 DAYS SURVIVAL</p>
+          <h1>無人島植物サバイバル</h1>
+          <p>植物を見きわめ、採って、食べる。5日間生き残れ。</p>
+          <button id="startButton" class="primary-button">ゲーム開始</button>
+          <div class="start-guide">
+            <p>矢印キー / WASD で移動</p>
+            <p>植物に近づくと調査できます</p>
+            <p>1日最大3種類まで採取できます</p>
+          </div>
+        </div>
+      </section>
 
-    <section id="resultScreen" class="screen result-screen hidden">
-      <div class="result-panel">
-        <p id="resultBadge" class="eyebrow">RESULT</p>
-        <h2 id="resultTitle">結果</h2>
-        <p id="resultText"></p>
-        <button id="restartButton" class="primary-button">もう一度遊ぶ</button>
-      </div>
-    </section>
-  </div>
+      <section id="gameScreen" class="screen game-screen hidden">
+        <header class="hud">
+          <div class="hud-block">
+            <span class="hud-label">DAY</span>
+            <strong id="dayLabel">1 / 5</strong>
+          </div>
+          <div class="hud-block">
+            <span class="hud-label">HP</span>
+            <strong id="hpLabel" class="heart-row">♥ ♥ ♥</strong>
+          </div>
+          <div id="ecosystemHud" class="hud-block ecosystem-hud">
+            <span class="hud-label">環境</span>
+            <strong id="ecosystemLabel">生態系レベル：3</strong>
+          </div>
+          <div class="hud-block">
+            <span class="hud-label">COLLECT</span>
+            <strong id="collectLabel">0 / 5</strong>
+          </div>
+        </header>
 
-  <script src="js/plants.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/game.js"></script>
-</body>
+        <main class="play-layout">
+          <section class="map-panel" aria-label="無人島マップ">
+            <div id="map" class="map"></div>
+          </section>
+
+          <section class="map-guide" aria-label="操作ガイド">
+            <p id="phaseText" class="map-guide-description">
+              島の植物を調査して採取しよう。
+            </p>
+          </section>
+
+          <aside class="side-panel">
+            <div class="panel-section">
+              <h2>採取バッグ</h2>
+              <ul id="bagList" class="bag-list"></ul>
+              <button id="finishExploreButton" class="danger-button">
+                採取をやめる
+              </button>
+            </div>
+
+            <div id="plantInspector" class="panel-section inspector empty">
+              <h2>植物調査</h2>
+              <div id="plantImageBox" class="plant-image-box hidden"></div>
+              <h3 id="plantName">近くに採取可能な植物はありません</h3>
+              <p id="plantDescription">植物に近づくと調査できます。</p>
+              <button id="collectButton" class="secondary-button" disabled>
+                Enterで採取
+              </button>
+            </div>
+          </aside>
+        </main>
+      </section>
+
+      <section id="nightScreen" class="screen night-screen hidden">
+        <div class="night-panel">
+          <p class="eyebrow">NIGHT PHASE</p>
+          <h2 id="nightTitle">夜フェーズ</h2>
+          <p id="nightText">食べる植物を1種類選んでください。</p>
+          <div id="nightChoices" class="choice-grid"></div>
+        </div>
+      </section>
+
+      <section id="dayResultScreen" class="screen day-result-screen hidden">
+        <div class="day-result-panel">
+          <p class="eyebrow">DAY RESULT</p>
+          <h2 id="dayResultTitle">今日の結果</h2>
+          <div class="day-result-content">
+            <div id="dayResultImageBox" class="day-result-image-box"></div>
+            <div id="dayResultDetails" class="day-result-details"></div>
+          </div>
+          <p class="day-result-guide">Enter または Space キーで次へ</p>
+          <button id="dayResultContinueButton" class="primary-button">
+            次へ
+          </button>
+        </div>
+      </section>
+
+      <section id="resultScreen" class="screen result-screen hidden">
+        <div class="result-panel">
+          <p id="resultBadge" class="eyebrow">RESULT</p>
+          <h2 id="resultTitle">結果</h2>
+          <p id="resultText"></p>
+          <button id="restartButton" class="primary-button">
+            もう一度遊ぶ
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <script src="js/plants.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+  </body>
 </html>

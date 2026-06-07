@@ -10,13 +10,25 @@
   const MAX_COLLECT = 3;
   const DAILY_PLANT_LIMIT = 16;
   const playerStart = { x: 24, y: 16 };
-  const SIGN_MESSAGE = "救荒植物を食べて夜を越すのだ！それ以外を食べてしまうとおなか壊してしまうぞ。出来るだけ外来種は減らすことをおすすめするぞ。";
-  const blockedTiles = new Set(["sea", "river", "tree", "rock", "sign", "camp"]);
+  const SIGN_MESSAGE =
+    "救荒植物を食べて夜を越すのだ！それ以外を食べてしまうとおなか壊してしまうぞ。出来るだけ外来種は減らすことをおすすめするぞ。";
+  const blockedTiles = new Set([
+    "sea",
+    "river",
+    "tree",
+    "rock",
+    "sign",
+    "camp",
+  ]);
   const invasiveCounts = {
     3: 5,
     2: 9,
     1: 12,
-    0: 16
+    0: 16,
+  };
+  const nonInvasiveCounts = {
+    3: { famine: 5, poison: 5, native: 1 },
+    1: { famine: 3, poison: 1, native: 0 },
   };
 
   const state = {
@@ -36,14 +48,17 @@
     signMessageVisible: false,
     pendingDayResult: null,
     phase: "title",
-    gameEnded: false
+    gameEnded: false,
   };
 
   function init() {
     SurvivalUI.cacheElements();
     SurvivalUI.elements.startButton.addEventListener("click", startGame);
     SurvivalUI.elements.restartButton.addEventListener("click", startGame);
-    SurvivalUI.elements.finishExploreButton.addEventListener("click", enterNightPhase);
+    SurvivalUI.elements.finishExploreButton.addEventListener(
+      "click",
+      enterNightPhase,
+    );
     window.addEventListener("keydown", handleKeyDown);
     SurvivalUI.showScreen("title");
   }
@@ -104,17 +119,48 @@
 
   function addRiver(tiles) {
     const riverPath = [
-      [19, 5], [20, 5], [19, 6], [20, 6],
-      [20, 7], [21, 7], [20, 8], [21, 8],
-      [21, 9], [22, 9], [21, 10], [22, 10],
-      [22, 11], [23, 11], [22, 12], [23, 12],
-      [22, 13], [23, 13], [21, 14], [22, 14],
-      [20, 15], [21, 15], [19, 16], [20, 16],
-      [18, 17], [19, 17], [18, 18], [19, 18],
-      [19, 19], [20, 19], [20, 20], [21, 20],
-      [21, 21], [22, 21], [22, 22], [23, 22],
-      [23, 23], [24, 23], [24, 24], [25, 24],
-      [25, 25], [26, 25]
+      [19, 5],
+      [20, 5],
+      [19, 6],
+      [20, 6],
+      [20, 7],
+      [21, 7],
+      [20, 8],
+      [21, 8],
+      [21, 9],
+      [22, 9],
+      [21, 10],
+      [22, 10],
+      [22, 11],
+      [23, 11],
+      [22, 12],
+      [23, 12],
+      [22, 13],
+      [23, 13],
+      [21, 14],
+      [22, 14],
+      [20, 15],
+      [21, 15],
+      [19, 16],
+      [20, 16],
+      [18, 17],
+      [19, 17],
+      [18, 18],
+      [19, 18],
+      [19, 19],
+      [20, 19],
+      [20, 20],
+      [21, 20],
+      [21, 21],
+      [22, 21],
+      [22, 22],
+      [23, 22],
+      [23, 23],
+      [24, 23],
+      [24, 24],
+      [25, 24],
+      [25, 25],
+      [26, 25],
     ];
 
     riverPath.forEach(([x, y]) => {
@@ -123,7 +169,10 @@
       }
     });
 
-    [[19, 16], [20, 16]].forEach(([x, y]) => {
+    [
+      [19, 16],
+      [20, 16],
+    ].forEach(([x, y]) => {
       if (isInsideMap(x, y)) {
         tiles[y][x] = "bridge";
       }
@@ -133,22 +182,49 @@
   function addScenery(tiles) {
     const scenery = {
       tree: [
-        [12, 10], [13, 10], [14, 10], [15, 10],
-        [11, 11], [13, 11], [15, 11], [16, 11],
-        [10, 20], [11, 20], [12, 20], [13, 20],
-        [11, 21], [12, 21], [14, 21],
-        [31, 8], [32, 8], [33, 8], [34, 8],
-        [32, 9], [34, 9], [35, 9],
-        [34, 20], [35, 20], [36, 20], [35, 21]
+        [12, 10],
+        [13, 10],
+        [14, 10],
+        [15, 10],
+        [11, 11],
+        [13, 11],
+        [15, 11],
+        [16, 11],
+        [10, 20],
+        [11, 20],
+        [12, 20],
+        [13, 20],
+        [11, 21],
+        [12, 21],
+        [14, 21],
+        [31, 8],
+        [32, 8],
+        [33, 8],
+        [34, 8],
+        [32, 9],
+        [34, 9],
+        [35, 9],
+        [34, 20],
+        [35, 20],
+        [36, 20],
+        [35, 21],
       ],
       rock: [
-        [36, 13], [37, 13], [38, 14],
-        [39, 15], [37, 16], [38, 17],
-        [14, 24], [15, 24], [16, 25],
-        [30, 24], [31, 25], [32, 25]
+        [36, 13],
+        [37, 13],
+        [38, 14],
+        [39, 15],
+        [37, 16],
+        [38, 17],
+        [14, 24],
+        [15, 24],
+        [16, 25],
+        [30, 24],
+        [31, 25],
+        [32, 25],
       ],
       sign: [[17, 15]],
-      camp: [[27, 17]]
+      camp: [[27, 17]],
     };
 
     Object.entries(scenery).forEach(([tile, positions]) => {
@@ -167,7 +243,7 @@
     const otherTotal = DAILY_PLANT_LIMIT - invasiveTotal;
     const dailyData = [
       ...pickPlants("invasive", invasiveTotal),
-      ...pickMixedNonInvasive(otherTotal)
+      ...pickMixedNonInvasive(otherTotal),
     ];
 
     shuffle(dailyData).forEach((data, index) => {
@@ -179,7 +255,7 @@
           x: position.x,
           y: position.y,
           data,
-          collected: false
+          collected: false,
         });
       }
     });
@@ -201,8 +277,20 @@
       return [];
     }
 
-    const categories = state.ecosystem === 0 ? [] : ["famine", "poison", "native"];
-    const pool = categories.flatMap((category) => PlantData.byCategory(category));
+    const fixedCounts = nonInvasiveCounts[state.ecosystem];
+    if (fixedCounts) {
+      return Object.entries(fixedCounts).flatMap(
+        ([category, categoryCount]) => {
+          return pickPlants(category, categoryCount);
+        },
+      );
+    }
+
+    const categories =
+      state.ecosystem === 0 ? [] : ["famine", "poison", "native"];
+    const pool = categories.flatMap((category) =>
+      PlantData.byCategory(category),
+    );
     const picked = [];
 
     for (let i = 0; i < count; i += 1) {
@@ -239,7 +327,10 @@
       return;
     }
 
-    if (state.phase === "dayResult" && (event.key === "Enter" || event.key === " " || event.code === "Space")) {
+    if (
+      state.phase === "dayResult" &&
+      (event.key === "Enter" || event.key === " " || event.code === "Space")
+    ) {
       event.preventDefault();
       continueAfterDayResult();
       return;
@@ -274,7 +365,7 @@
       a: [-1, 0],
       A: [-1, 0],
       d: [1, 0],
-      D: [1, 0]
+      D: [1, 0],
     };
 
     const move = keyMap[event.key];
@@ -289,10 +380,13 @@
   function movePlayer(dx, dy) {
     const next = {
       x: state.player.x + dx,
-      y: state.player.y + dy
+      y: state.player.y + dy,
     };
 
-    if (!isInsideMap(next.x, next.y) || blockedTiles.has(state.tiles[next.y][next.x])) {
+    if (
+      !isInsideMap(next.x, next.y) ||
+      blockedTiles.has(state.tiles[next.y][next.x])
+    ) {
       return;
     }
 
@@ -303,13 +397,16 @@
   }
 
   function updateNearbyPlant() {
-    state.nearbyPlant = state.plantsOnMap.find((plant) => {
-      if (plant.collected) {
-        return false;
-      }
-      const distance = Math.abs(plant.x - state.player.x) + Math.abs(plant.y - state.player.y);
-      return distance <= 1;
-    }) || null;
+    state.nearbyPlant =
+      state.plantsOnMap.find((plant) => {
+        if (plant.collected) {
+          return false;
+        }
+        const distance =
+          Math.abs(plant.x - state.player.x) +
+          Math.abs(plant.y - state.player.y);
+        return distance <= 1;
+      }) || null;
   }
 
   function updateNearbySign() {
@@ -320,7 +417,8 @@
         if (state.tiles[y][x] !== "sign") {
           continue;
         }
-        const distance = Math.abs(x - state.player.x) + Math.abs(y - state.player.y);
+        const distance =
+          Math.abs(x - state.player.x) + Math.abs(y - state.player.y);
         if (distance <= 1) {
           state.nearbySign = { x, y };
           return;
@@ -393,7 +491,10 @@
 
     if (eatenPlant && eatenPlant.category === "poison") {
       state.hp = 0;
-      messages.push({ text: "有毒植物を食べたため、ゲームオーバーです。", negative: true });
+      messages.push({
+        text: "有毒植物を食べたため、ゲームオーバーです。",
+        negative: true,
+      });
       return {
         eatenPlant,
         statusLabel,
@@ -407,7 +508,7 @@
         isPoison: true,
         isGameOver: true,
         finalAction: "gameOver",
-        finalText: `${eatenPlant.name}は有毒植物でした。食べたことでゲームオーバーです。`
+        finalText: `${eatenPlant.name}は有毒植物でした。食べたことでゲームオーバーです。`,
       };
     }
 
@@ -418,9 +519,15 @@
     const hpAfter = state.hp;
 
     if (hpAfter < hpBefore) {
-      messages.push({ text: "夜を越えるためにHPが減少しました。", negative: true });
+      messages.push({
+        text: "夜を越えるためにHPが減少しました。",
+        negative: true,
+      });
     } else if (eatenPlant && eatenPlant.category === "famine") {
-      messages.push({ text: "救荒植物を食べたため、HPの減少を補えました。", negative: false });
+      messages.push({
+        text: "救荒植物を食べたため、HPの減少を補えました。",
+        negative: false,
+      });
     }
 
     const invasiveNames = getCollectedInvasiveNames();
@@ -428,15 +535,27 @@
     const ecosystemAfter = state.ecosystem;
 
     if (ecosystemAfter < ecosystemBefore) {
-      messages.push({ text: "外来種の採取が不足したため、生態系レベルが低下しました。", negative: true });
+      messages.push({
+        text: "外来種の採取が不足したため、生態系レベルが低下しました。",
+        negative: true,
+      });
     } else if (invasiveNames.size >= 2) {
-      messages.push({ text: "外来種を2種類以上採取したため、生態系レベルを維持できました。", negative: false });
+      messages.push({
+        text: "外来種を2種類以上採取したため、生態系レベルを維持できました。",
+        negative: false,
+      });
     } else {
-      messages.push({ text: "外来種の採取が不足しています。生態系は危険な状態です。", negative: true });
+      messages.push({
+        text: "外来種の採取が不足しています。生態系は危険な状態です。",
+        negative: true,
+      });
     }
 
     if (state.hp <= 0) {
-      messages.push({ text: "HPが0になったため、ゲームオーバーです。", negative: true });
+      messages.push({
+        text: "HPが0になったため、ゲームオーバーです。",
+        negative: true,
+      });
       return {
         eatenPlant,
         statusLabel,
@@ -450,7 +569,8 @@
         isPoison: false,
         isGameOver: true,
         finalAction: "gameOver",
-        finalText: "夜を越える体力がなくなりました。HPが0になったためゲームオーバーです。"
+        finalText:
+          "夜を越える体力がなくなりました。HPが0になったためゲームオーバーです。",
       };
     }
 
@@ -469,7 +589,8 @@
         isPoison: false,
         isGameOver: false,
         finalAction: "clear",
-        finalText: "Day5終了時点で生存しています。植物を見きわめ、無人島で5日間生き延びました。"
+        finalText:
+          "Day5終了時点で生存しています。植物を見きわめ、無人島で5日間生き延びました。",
       };
     }
 
@@ -486,7 +607,7 @@
       isPoison: false,
       isGameOver: false,
       finalAction: "nextDay",
-      finalText: ""
+      finalText: "",
     };
   }
 
@@ -518,7 +639,7 @@
     return new Set(
       state.collected
         .filter((plant) => plant.category === "invasive")
-        .map((plant) => plant.name)
+        .map((plant) => plant.name),
     );
   }
 
@@ -540,21 +661,28 @@
   function render() {
     SurvivalUI.updateHud(state);
     SurvivalUI.renderMap(state);
-    SurvivalUI.renderInspector(state.nearbyPlant, collectNearbyPlant, state.nearbySign, readNearbySign);
+    SurvivalUI.renderInspector(
+      state.nearbyPlant,
+      collectNearbyPlant,
+      state.nearbySign,
+      readNearbySign,
+    );
     SurvivalUI.renderBag(state.collected);
     if (state.signMessageVisible) {
       SurvivalUI.elements.phaseText.textContent = SIGN_MESSAGE;
       return;
     }
     if (state.nearbyPlant) {
-      SurvivalUI.elements.phaseText.textContent = state.nearbyPlant.data.note || "説明はまだ登録されていません。";
+      SurvivalUI.elements.phaseText.textContent =
+        state.nearbyPlant.data.note || "説明はまだ登録されていません。";
       return;
     }
     if (state.nearbySign) {
-      SurvivalUI.elements.phaseText.textContent = "看板があります。Enterで内容を読めます。";
+      SurvivalUI.elements.phaseText.textContent =
+        "看板があります。Enterで内容を読めます。";
       return;
     }
-    SurvivalUI.elements.phaseText.textContent = `Day ${state.day}。植物を最大5種類まで採取できます。`;
+    SurvivalUI.elements.phaseText.textContent = `Day ${state.day}。植物を最大3種類まで採取できます。`;
   }
 
   function isInsideMap(x, y) {
@@ -562,7 +690,9 @@
   }
 
   function isDecoratableLand(tiles, x, y) {
-    return isInsideMap(x, y) && (tiles[y][x] === "grass" || tiles[y][x] === "sand");
+    return (
+      isInsideMap(x, y) && (tiles[y][x] === "grass" || tiles[y][x] === "sand")
+    );
   }
 
   function isNearStart(x, y) {
