@@ -7,9 +7,10 @@
   const INITIAL_HP = 3;
   const MAX_HP = 3;
   const INITIAL_ECOSYSTEM = 3;
-  const MAX_COLLECT = 5;
+  const MAX_COLLECT = 3;
   const DAILY_PLANT_LIMIT = 16;
   const playerStart = { x: 24, y: 16 };
+  const SIGN_MESSAGE = "救荒植物を食べて夜を越すのだ！それ以外を食べてしまうとおなか壊してしまうぞ。出来るだけ外来種は減らすことをおすすめするぞ。";
   const blockedTiles = new Set(["sea", "river", "tree", "rock", "sign", "camp"]);
   const invasiveCounts = {
     3: 5,
@@ -31,6 +32,8 @@
     plantsOnMap: [],
     collected: [],
     nearbyPlant: null,
+    nearbySign: null,
+    signMessageVisible: false,
     pendingDayResult: null,
     phase: "title",
     gameEnded: false
@@ -49,6 +52,8 @@
     state.day = 1;
     state.hp = INITIAL_HP;
     state.ecosystem = INITIAL_ECOSYSTEM;
+    state.nearbySign = null;
+    state.signMessageVisible = false;
     state.pendingDayResult = null;
     state.phase = "explore";
     state.gameEnded = false;
@@ -59,9 +64,11 @@
   function startDay() {
     state.player = { ...playerStart };
     state.collected = [];
+    state.signMessageVisible = false;
     state.tiles = createIslandTiles();
     state.plantsOnMap = createDailyPlants();
     updateNearbyPlant();
+    updateNearbySign();
     render();
   }
 
@@ -243,6 +250,11 @@
     }
 
     if (event.key === "Enter") {
+      if (state.nearbySign) {
+        event.preventDefault();
+        readNearbySign();
+        return;
+      }
       if (state.nearbyPlant && state.collected.length < MAX_COLLECT) {
         event.preventDefault();
         collectNearbyPlant();
@@ -286,6 +298,7 @@
 
     state.player = next;
     updateNearbyPlant();
+    updateNearbySign();
     render();
   }
 
@@ -299,6 +312,34 @@
     }) || null;
   }
 
+  function updateNearbySign() {
+    state.nearbySign = null;
+
+    for (let y = 0; y < MAP_HEIGHT; y += 1) {
+      for (let x = 0; x < MAP_WIDTH; x += 1) {
+        if (state.tiles[y][x] !== "sign") {
+          continue;
+        }
+        const distance = Math.abs(x - state.player.x) + Math.abs(y - state.player.y);
+        if (distance <= 1) {
+          state.nearbySign = { x, y };
+          return;
+        }
+      }
+    }
+
+    state.signMessageVisible = false;
+  }
+
+  function readNearbySign() {
+    if (!state.nearbySign) {
+      return;
+    }
+
+    state.signMessageVisible = true;
+    render();
+  }
+
   function collectNearbyPlant() {
     if (!state.nearbyPlant || state.collected.length >= MAX_COLLECT) {
       return;
@@ -307,6 +348,7 @@
     state.nearbyPlant.collected = true;
     state.collected.push(state.nearbyPlant.data);
     updateNearbyPlant();
+    updateNearbySign();
     render();
 
     if (state.collected.length >= MAX_COLLECT) {
@@ -498,11 +540,21 @@
   function render() {
     SurvivalUI.updateHud(state);
     SurvivalUI.renderMap(state);
-    SurvivalUI.renderInspector(state.nearbyPlant, collectNearbyPlant);
+    SurvivalUI.renderInspector(state.nearbyPlant, collectNearbyPlant, state.nearbySign, readNearbySign);
     SurvivalUI.renderBag(state.collected);
-    SurvivalUI.elements.phaseText.textContent = state.nearbyPlant
-      ? state.nearbyPlant.data.note || "説明はまだ登録されていません。"
-      : `Day ${state.day}。植物を最大5種類まで採取できます。`;
+    if (state.signMessageVisible) {
+      SurvivalUI.elements.phaseText.textContent = SIGN_MESSAGE;
+      return;
+    }
+    if (state.nearbyPlant) {
+      SurvivalUI.elements.phaseText.textContent = state.nearbyPlant.data.note || "説明はまだ登録されていません。";
+      return;
+    }
+    if (state.nearbySign) {
+      SurvivalUI.elements.phaseText.textContent = "看板があります。Enterで内容を読めます。";
+      return;
+    }
+    SurvivalUI.elements.phaseText.textContent = `Day ${state.day}。植物を最大5種類まで採取できます。`;
   }
 
   function isInsideMap(x, y) {

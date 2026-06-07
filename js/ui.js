@@ -77,9 +77,13 @@
           state.nearbyPlant &&
           state.nearbyPlant.x === x &&
           state.nearbyPlant.y === y;
+        const isNearbySign =
+          state.nearbySign &&
+          state.nearbySign.x === x &&
+          state.nearbySign.y === y;
 
         tile.className = makeTileClass(state.tiles[y][x]);
-        if (isNearby) {
+        if (isNearby || isNearbySign) {
           tile.classList.add("nearby");
         }
 
@@ -104,8 +108,20 @@
     elements.map.appendChild(fragment);
   }
 
-  function renderInspector(plant, onCollect) {
+  function renderInspector(plant, onCollect, sign, onReadSign) {
     elements.collectButton.onclick = null;
+
+    if (sign) {
+      elements.plantInspector.classList.add("empty");
+      elements.plantImageBox.classList.add("hidden");
+      elements.plantImageBox.textContent = "";
+      elements.plantName.textContent = "看板";
+      elements.plantDescription.textContent = "島で生き延びるためのヒントが書かれています。";
+      elements.collectButton.disabled = false;
+      elements.collectButton.textContent = "Enterで看板を読む";
+      elements.collectButton.onclick = onReadSign;
+      return;
+    }
 
     if (!plant) {
       elements.plantInspector.classList.add("empty");
