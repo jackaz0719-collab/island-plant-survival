@@ -1,0 +1,193 @@
+(function () {
+  "use strict";
+
+  const elements = {};
+
+  function cacheElements() {
+    [
+      "titleScreen",
+      "gameScreen",
+      "nightScreen",
+      "resultScreen",
+      "startButton",
+      "restartButton",
+      "dayLabel",
+      "hpLabel",
+      "ecosystemHud",
+      "ecosystemLabel",
+      "collectLabel",
+      "phaseText",
+      "map",
+      "plantInspector",
+      "plantImageBox",
+      "plantName",
+      "plantDescription",
+      "collectButton",
+      "bagList",
+      "finishExploreButton",
+      "nightTitle",
+      "nightText",
+      "nightChoices",
+      "resultBadge",
+      "resultTitle",
+      "resultText"
+    ].forEach((id) => {
+      elements[id] = document.getElementById(id);
+    });
+  }
+
+  function showScreen(name) {
+    elements.titleScreen.classList.toggle("hidden", name !== "title");
+    elements.gameScreen.classList.toggle("hidden", name !== "game");
+    elements.nightScreen.classList.toggle("hidden", name !== "night");
+    elements.resultScreen.classList.toggle("hidden", name !== "result");
+  }
+
+  function updateHud(state) {
+    elements.dayLabel.textContent = `${state.day} / ${state.maxDay}`;
+    elements.hpLabel.textContent = "♥ ".repeat(state.hp).trim() || "0";
+    elements.ecosystemLabel.textContent = `生態系レベル：${state.ecosystem}`;
+    elements.ecosystemHud.classList.toggle("danger", state.ecosystem === 1);
+    elements.ecosystemHud.classList.toggle("critical", state.ecosystem === 0);
+    elements.collectLabel.textContent = `${state.collected.length} / ${state.maxCollect}`;
+  }
+
+  function makeTileClass(tile) {
+    return `tile ${tile}`;
+  }
+
+  function renderMap(state) {
+    const fragment = document.createDocumentFragment();
+    elements.map.textContent = "";
+
+    for (let y = 0; y < state.mapHeight; y += 1) {
+      for (let x = 0; x < state.mapWidth; x += 1) {
+        const tile = document.createElement("div");
+        const plant = state.plantsOnMap.find((item) => !item.collected && item.x === x && item.y === y);
+        const isPlayer = state.player.x === x && state.player.y === y;
+        const isNearby = state.nearbyPlant && state.nearbyPlant.x === x && state.nearbyPlant.y === y;
+
+        tile.className = makeTileClass(state.tiles[y][x]);
+        if (isNearby) {
+          tile.classList.add("nearby");
+        }
+
+        if (plant) {
+          const plantEntity = document.createElement("span");
+          plantEntity.className = "entity plant";
+          plantEntity.title = plant.data.name;
+          tile.appendChild(plantEntity);
+        }
+
+        if (isPlayer) {
+          const player = document.createElement("span");
+          player.className = "entity player";
+          player.title = "プレイヤー";
+          tile.appendChild(player);
+        }
+
+        fragment.appendChild(tile);
+      }
+    }
+
+    elements.map.appendChild(fragment);
+  }
+
+  function renderInspector(plant, onCollect) {
+    elements.collectButton.onclick = null;
+
+    if (!plant) {
+      elements.plantInspector.classList.add("empty");
+      elements.plantImageBox.classList.add("hidden");
+      elements.plantImageBox.textContent = "";
+      elements.plantName.textContent = "近くに採取可能な植物はありません";
+      elements.plantDescription.textContent = "植物に近づくと調査できます。";
+      elements.collectButton.disabled = true;
+      elements.collectButton.textContent = "Enterで採取";
+      return;
+    }
+
+    elements.plantInspector.classList.remove("empty");
+    elements.plantImageBox.classList.remove("hidden");
+    renderPlantImage(elements.plantImageBox, plant.data.name);
+    elements.plantName.textContent = plant.data.name;
+    elements.plantDescription.textContent = plant.data.note || "説明はまだ登録されていません。";
+    elements.collectButton.disabled = false;
+    elements.collectButton.textContent = "Enterで採取";
+    elements.collectButton.onclick = onCollect;
+  }
+
+  function renderPlantImage(container, name) {
+    container.textContent = "";
+    const image = document.createElement("img");
+    image.alt = name;
+    image.src = PlantData.imagePath(name);
+    image.onerror = () => {
+      container.textContent = "画像が設定されていません";
+    };
+    container.appendChild(image);
+  }
+
+  function renderBag(collected) {
+    elements.bagList.textContent = "";
+    if (collected.length === 0) {
+      const empty = document.createElement("li");
+      empty.textContent = "まだ採取していません";
+      elements.bagList.appendChild(empty);
+      return;
+    }
+
+    collected.forEach((plant) => {
+      const item = document.createElement("li");
+      const name = document.createElement("span");
+      name.textContent = plant.name;
+      item.appendChild(name);
+      elements.bagList.appendChild(item);
+    });
+  }
+
+  function renderNight(state, onEat) {
+    elements.nightTitle.textContent = `Day ${state.day} の夜`;
+    elements.nightText.textContent = state.collected.length > 0
+      ? "採取した植物の中から、食べる植物を1種類選んでください。"
+      : "今日は植物を採取していません。食べる植物を選べないため、そのまま夜を越します。";
+    elements.nightChoices.textContent = "";
+
+    state.collected.forEach((plant) => {
+      elements.nightChoices.appendChild(makeChoiceCard(plant, () => onEat(plant)));
+    });
+  }
+
+  function makeChoiceCard(plant, onClick) {
+    const card = document.createElement("article");
+    card.className = "choice-card";
+    const title = document.createElement("h3");
+    const text = document.createElement("p");
+    const button = document.createElement("button");
+    title.textContent = plant.name;
+    text.textContent = plant.note || "説明はまだ登録されていません。";
+    button.className = "choice-button";
+    button.textContent = "これを食べる";
+    button.addEventListener("click", onClick);
+    card.append(title, text, button);
+    return card;
+  }
+
+  function renderResult(win, text) {
+    elements.resultBadge.textContent = win ? "CLEAR" : "GAME OVER";
+    elements.resultTitle.textContent = win ? "島で生き延びた！" : "サバイバル失敗";
+    elements.resultText.textContent = text;
+  }
+
+  window.SurvivalUI = {
+    elements,
+    cacheElements,
+    showScreen,
+    updateHud,
+    renderMap,
+    renderInspector,
+    renderBag,
+    renderNight,
+    renderResult
+  };
+})();
