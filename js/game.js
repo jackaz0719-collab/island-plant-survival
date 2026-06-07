@@ -31,6 +31,7 @@
     plantsOnMap: [],
     collected: [],
     nearbyPlant: null,
+    pendingDayResult: null,
     phase: "title",
     gameEnded: false
   };
@@ -48,6 +49,7 @@
     state.day = 1;
     state.hp = INITIAL_HP;
     state.ecosystem = INITIAL_ECOSYSTEM;
+    state.pendingDayResult = null;
     state.phase = "explore";
     state.gameEnded = false;
     startDay();
@@ -230,6 +232,12 @@
       return;
     }
 
+    if (state.phase === "dayResult" && (event.key === "Enter" || event.key === " " || event.code === "Space")) {
+      event.preventDefault();
+      continueAfterDayResult();
+      return;
+    }
+
     if (state.phase !== "explore" || state.gameEnded) {
       return;
     }
@@ -326,25 +334,135 @@
       return;
     }
 
+    state.pendingDayResult = createDayResult(eatenPlant);
+    state.phase = "dayResult";
+    SurvivalUI.renderDayResult(state.pendingDayResult, continueAfterDayResult);
+    SurvivalUI.showScreen("dayResult");
+  }
+
+  function createDayResult(eatenPlant) {
+    const hpBefore = state.hp;
+    const ecosystemBefore = state.ecosystem;
+    const dayBefore = state.day;
+    const messages = [];
+    const statusLabel = eatenPlant
+      ? PlantData.categoryLabels[eatenPlant.category]
+      : "未選択";
+
     if (eatenPlant && eatenPlant.category === "poison") {
-      endGame(false, `${eatenPlant.name}は有毒植物でした。食べたことでゲームオーバーです。`);
-      return;
+      state.hp = 0;
+      messages.push({ text: "有毒植物を食べたため、ゲームオーバーです。", negative: true });
+      return {
+        eatenPlant,
+        statusLabel,
+        hpBefore,
+        hpAfter: state.hp,
+        ecosystemBefore,
+        ecosystemAfter: state.ecosystem,
+        dayBefore,
+        dayAfterLabel: "GAME OVER",
+        messages,
+        isPoison: true,
+        isGameOver: true,
+        finalAction: "gameOver",
+        finalText: `${eatenPlant.name}は有毒植物でした。食べたことでゲームオーバーです。`
+      };
     }
 
     state.hp -= 1;
     if (eatenPlant && eatenPlant.category === "famine") {
       state.hp = Math.min(MAX_HP, state.hp + 1);
     }
+    const hpAfter = state.hp;
 
+    if (hpAfter < hpBefore) {
+      messages.push({ text: "夜を越えるためにHPが減少しました。", negative: true });
+    } else if (eatenPlant && eatenPlant.category === "famine") {
+      messages.push({ text: "救荒植物を食べたため、HPの減少を補えました。", negative: false });
+    }
+
+    const invasiveNames = getCollectedInvasiveNames();
     updateEcosystem();
+    const ecosystemAfter = state.ecosystem;
+
+    if (ecosystemAfter < ecosystemBefore) {
+      messages.push({ text: "外来種の採取が不足したため、生態系レベルが低下しました。", negative: true });
+    } else if (invasiveNames.size >= 2) {
+      messages.push({ text: "外来種を2種類以上採取したため、生態系レベルを維持できました。", negative: false });
+    } else {
+      messages.push({ text: "外来種の採取が不足しています。生態系は危険な状態です。", negative: true });
+    }
 
     if (state.hp <= 0) {
-      endGame(false, "夜を越える体力がなくなりました。HPが0になったためゲームオーバーです。");
-      return;
+      messages.push({ text: "HPが0になったため、ゲームオーバーです。", negative: true });
+      return {
+        eatenPlant,
+        statusLabel,
+        hpBefore,
+        hpAfter,
+        ecosystemBefore,
+        ecosystemAfter,
+        dayBefore,
+        dayAfterLabel: "GAME OVER",
+        messages,
+        isPoison: false,
+        isGameOver: true,
+        finalAction: "gameOver",
+        finalText: "夜を越える体力がなくなりました。HPが0になったためゲームオーバーです。"
+      };
     }
 
     if (state.day >= MAX_DAY) {
-      endGame(true, "Day5終了時点で生存しています。植物を見きわめ、無人島で5日間生き延びました。");
+      messages.push({ text: "Day5終了時点で生存しました。", negative: false });
+      return {
+        eatenPlant,
+        statusLabel,
+        hpBefore,
+        hpAfter,
+        ecosystemBefore,
+        ecosystemAfter,
+        dayBefore,
+        dayAfterLabel: "CLEAR",
+        messages,
+        isPoison: false,
+        isGameOver: false,
+        finalAction: "clear",
+        finalText: "Day5終了時点で生存しています。植物を見きわめ、無人島で5日間生き延びました。"
+      };
+    }
+
+    return {
+      eatenPlant,
+      statusLabel,
+      hpBefore,
+      hpAfter,
+      ecosystemBefore,
+      ecosystemAfter,
+      dayBefore,
+      dayAfterLabel: state.day + 1,
+      messages,
+      isPoison: false,
+      isGameOver: false,
+      finalAction: "nextDay",
+      finalText: ""
+    };
+  }
+
+  function continueAfterDayResult() {
+    const summary = state.pendingDayResult;
+    if (!summary || state.gameEnded) {
+      return;
+    }
+
+    state.pendingDayResult = null;
+
+    if (summary.finalAction === "gameOver") {
+      endGame(false, summary.finalText);
+      return;
+    }
+
+    if (summary.finalAction === "clear") {
+      endGame(true, summary.finalText);
       return;
     }
 
@@ -354,12 +472,16 @@
     SurvivalUI.showScreen("game");
   }
 
-  function updateEcosystem() {
-    const invasiveNames = new Set(
+  function getCollectedInvasiveNames() {
+    return new Set(
       state.collected
         .filter((plant) => plant.category === "invasive")
         .map((plant) => plant.name)
     );
+  }
+
+  function updateEcosystem() {
+    const invasiveNames = getCollectedInvasiveNames();
 
     if (invasiveNames.size <= 1) {
       state.ecosystem = Math.max(0, state.ecosystem - 1);

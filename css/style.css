@@ -131,6 +131,7 @@ button {
 
 .title-copy,
 .result-panel,
+.day-result-panel,
 .night-panel {
   position: relative;
   z-index: 1;
@@ -150,6 +151,7 @@ button {
 
 .title-copy p,
 .result-panel p,
+.day-result-panel p,
 .night-panel p {
   margin: 10px 0 20px;
   font-weight: 700;
@@ -637,6 +639,7 @@ button {
 }
 
 .night-screen,
+.day-result-screen,
 .result-screen {
   display: grid;
   place-items: center;
@@ -675,6 +678,7 @@ button {
 }
 
 .choice-card img,
+.day-result-image-box img,
 .night-panel img,
 .result-panel img {
   display: block;
@@ -688,6 +692,70 @@ button {
   object-fit: contain;
   object-position: center;
   overflow: hidden;
+}
+
+.day-result-content {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin: 18px 0 12px;
+  text-align: left;
+}
+
+.day-result-image-box {
+  display: grid;
+  place-items: center;
+  width: 220px;
+  height: 180px;
+  overflow: hidden;
+  background: #f9db86;
+  border: 4px solid var(--line);
+  color: #6c342e;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.day-result-image-box.empty {
+  padding: 12px;
+}
+
+.day-result-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.result-line,
+.result-note {
+  margin: 0;
+  padding: 8px 10px;
+  background: #f9db86;
+  border: 3px solid var(--line);
+  color: #2c2f2f;
+  font-weight: 900;
+}
+
+.result-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.negative {
+  color: #c82124;
+}
+
+.result-note.negative {
+  color: #c82124;
+  background: #ffe2d2;
+}
+
+.day-result-guide {
+  color: #6c342e;
+  font-size: 14px;
 }
 
 .log-text {
@@ -722,6 +790,15 @@ button {
 @media (max-width: 720px) {
   .game-screen {
     padding: 8px;
+  }
+
+  .day-result-content {
+    grid-template-columns: 1fr;
+  }
+
+  .day-result-image-box {
+    width: 100%;
+    height: 150px;
   }
 
   .hud {

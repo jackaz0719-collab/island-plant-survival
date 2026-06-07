@@ -8,6 +8,7 @@
       "titleScreen",
       "gameScreen",
       "nightScreen",
+      "dayResultScreen",
       "resultScreen",
       "startButton",
       "restartButton",
@@ -28,9 +29,13 @@
       "nightTitle",
       "nightText",
       "nightChoices",
+      "dayResultTitle",
+      "dayResultImageBox",
+      "dayResultDetails",
+      "dayResultContinueButton",
       "resultBadge",
       "resultTitle",
-      "resultText"
+      "resultText",
     ].forEach((id) => {
       elements[id] = document.getElementById(id);
     });
@@ -40,6 +45,7 @@
     elements.titleScreen.classList.toggle("hidden", name !== "title");
     elements.gameScreen.classList.toggle("hidden", name !== "game");
     elements.nightScreen.classList.toggle("hidden", name !== "night");
+    elements.dayResultScreen.classList.toggle("hidden", name !== "dayResult");
     elements.resultScreen.classList.toggle("hidden", name !== "result");
   }
 
@@ -63,9 +69,14 @@
     for (let y = 0; y < state.mapHeight; y += 1) {
       for (let x = 0; x < state.mapWidth; x += 1) {
         const tile = document.createElement("div");
-        const plant = state.plantsOnMap.find((item) => !item.collected && item.x === x && item.y === y);
+        const plant = state.plantsOnMap.find(
+          (item) => !item.collected && item.x === x && item.y === y,
+        );
         const isPlayer = state.player.x === x && state.player.y === y;
-        const isNearby = state.nearbyPlant && state.nearbyPlant.x === x && state.nearbyPlant.y === y;
+        const isNearby =
+          state.nearbyPlant &&
+          state.nearbyPlant.x === x &&
+          state.nearbyPlant.y === y;
 
         tile.className = makeTileClass(state.tiles[y][x]);
         if (isNearby) {
@@ -111,7 +122,8 @@
     elements.plantImageBox.classList.remove("hidden");
     renderPlantImage(elements.plantImageBox, plant.data.name);
     elements.plantName.textContent = plant.data.name;
-    elements.plantDescription.textContent = plant.data.note || "説明はまだ登録されていません。";
+    elements.plantDescription.textContent =
+      plant.data.note || "説明はまだ登録されていません。";
     elements.collectButton.disabled = false;
     elements.collectButton.textContent = "Enterで採取";
     elements.collectButton.onclick = onCollect;
@@ -148,13 +160,16 @@
 
   function renderNight(state, onEat) {
     elements.nightTitle.textContent = `Day ${state.day} の夜`;
-    elements.nightText.textContent = state.collected.length > 0
-      ? "採取した植物の中から、食べる植物を1種類選んでください。"
-      : "今日は植物を採取していません。食べる植物を選べないため、そのまま夜を越します。";
+    elements.nightText.textContent =
+      state.collected.length > 0
+        ? "採取した植物の中から、食べる植物を1種類選んでください。"
+        : "今日は植物を採取していません。食べる植物を選べないため、そのまま夜を越します。";
     elements.nightChoices.textContent = "";
 
     state.collected.forEach((plant) => {
-      elements.nightChoices.appendChild(makeChoiceCard(plant, () => onEat(plant)));
+      elements.nightChoices.appendChild(
+        makeChoiceCard(plant, () => onEat(plant)),
+      );
     });
   }
 
@@ -173,9 +188,68 @@
     return card;
   }
 
+  function renderDayResult(summary, onContinue) {
+    elements.dayResultTitle.textContent = summary.eatenPlant
+      ? `${summary.eatenPlant.name}を食べた`
+      : "食べる植物がありませんでした";
+    elements.dayResultImageBox.textContent = "";
+    elements.dayResultImageBox.classList.toggle("empty", !summary.eatenPlant);
+
+    if (summary.eatenPlant) {
+      renderPlantImage(elements.dayResultImageBox, summary.eatenPlant.name);
+    } else {
+      elements.dayResultImageBox.textContent = "植物画像はありません";
+    }
+
+    elements.dayResultDetails.textContent = "";
+    elements.dayResultDetails.append(
+      makeResultLine("Status", summary.statusLabel, summary.isPoison),
+      makeResultLine(
+        "HP",
+        `${summary.hpBefore} → ${summary.hpAfter}`,
+        summary.hpAfter < summary.hpBefore,
+      ),
+      makeResultLine(
+        "生態系",
+        `${summary.ecosystemBefore} → ${summary.ecosystemAfter}`,
+        summary.ecosystemAfter < summary.ecosystemBefore,
+      ),
+      makeResultLine(
+        "Day",
+        `${summary.dayBefore} → ${summary.dayAfterLabel}`,
+        summary.isGameOver,
+      ),
+    );
+
+    summary.messages.forEach((message) => {
+      const item = document.createElement("p");
+      item.className = message.negative
+        ? "result-note negative"
+        : "result-note";
+      item.textContent = message.text;
+      elements.dayResultDetails.appendChild(item);
+    });
+
+    elements.dayResultContinueButton.onclick = onContinue;
+  }
+
+  function makeResultLine(label, value, negative) {
+    const row = document.createElement("p");
+    row.className = "result-line";
+    const labelElement = document.createElement("span");
+    const valueElement = document.createElement("strong");
+    labelElement.textContent = `${label}：`;
+    valueElement.textContent = value;
+    if (negative) {
+      valueElement.classList.add("negative");
+    }
+    row.append(labelElement, valueElement);
+    return row;
+  }
+
   function renderResult(win, text) {
     elements.resultBadge.textContent = win ? "CLEAR" : "GAME OVER";
-    elements.resultTitle.textContent = win ? "島で生き延びた！" : "サバイバル失敗";
+    elements.resultTitle.textContent = win ? "救助された！" : "サバイバル失敗";
     elements.resultText.textContent = text;
   }
 
@@ -188,6 +262,7 @@
     renderInspector,
     renderBag,
     renderNight,
-    renderResult
+    renderDayResult,
+    renderResult,
   };
 })();
