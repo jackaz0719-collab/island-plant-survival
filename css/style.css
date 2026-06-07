@@ -322,9 +322,9 @@ button {
   grid-row: 1;
   min-width: 0;
   width: 100%;
-  height: 620px;
-  min-height: 620px;
-  padding: 8px;
+  height: 626px;
+  min-height: 626px;
+  padding: 2px;
   background: #0b527f;
   border: 5px solid var(--line);
   overflow: hidden;
@@ -355,8 +355,8 @@ button {
 
 .map {
   display: grid;
-  grid-template-columns: repeat(48, 18px);
-  grid-template-rows: repeat(32, 18px);
+  grid-template-columns: repeat(48, 19px);
+  grid-template-rows: repeat(32, 19px);
   width: max-content;
   border: 4px solid var(--line);
   background: var(--sea);
@@ -365,8 +365,8 @@ button {
 
 .tile {
   position: relative;
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
   overflow: visible;
 }
 
@@ -444,8 +444,8 @@ button {
   position: absolute;
   left: 1px;
   top: 0;
-  width: 16px;
-  height: 17px;
+  width: 17px;
+  height: 18px;
   pointer-events: none;
 }
 
@@ -453,22 +453,22 @@ button {
   z-index: 6;
   left: 1px;
   top: 0;
-  width: 16px;
-  height: 18px;
+  width: 17px;
+  height: 19px;
   background-image:
     var(--tile-player),
     linear-gradient(#2f2435 0 12%, #ffd08a 13% 37%, #2f73c4 38% 68%, #f2e2b5 69% 100%);
   background-repeat: no-repeat;
   background-position: center, center;
-  background-size: 100% 100%, 14px 17px;
+  background-size: 100% 100%, 15px 18px;
 }
 
 .plant {
   z-index: 4;
   left: 3px;
   top: 3px;
-  width: 12px;
-  height: 13px;
+  width: 13px;
+  height: 14px;
 }
 
 .plant::before,
@@ -490,7 +490,7 @@ button {
 .plant::after {
   left: 0;
   top: 0;
-  width: 12px;
+  width: 13px;
   height: 8px;
   background:
     radial-gradient(circle at 7px 2px, #f5e55e 0 2px, transparent 3px),
@@ -701,8 +701,8 @@ button {
   }
 
   .map-panel {
-    height: 620px;
-    min-height: 620px;
+    height: 626px;
+    min-height: 626px;
   }
 
   .side-panel {
