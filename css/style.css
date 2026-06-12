@@ -61,8 +61,7 @@ button {
   display: grid;
   place-items: center;
   padding: 28px;
-  background:
-    linear-gradient(#55c9e8 0 58%, #1d87bd 58% 100%);
+  background: linear-gradient(#55c9e8 0 58%, #1d87bd 58% 100%);
 }
 
 .title-scene {
@@ -89,8 +88,12 @@ button {
   width: min(640px, 82vw);
   height: 190px;
   transform: translateX(-50%);
-  background:
-    radial-gradient(ellipse at center, #63a84a 0 34%, #e9c66e 35% 57%, transparent 58%);
+  background: radial-gradient(
+    ellipse at center,
+    #63a84a 0 34%,
+    #e9c66e 35% 57%,
+    transparent 58%
+  );
   filter: drop-shadow(0 12px 0 rgba(0, 0, 0, 0.22));
 }
 
@@ -232,6 +235,53 @@ button {
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 2px, transparent 2px),
     #1a6e9d;
   background-size: 32px 32px;
+}
+
+.tutorial-screen {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  height: 100vh;
+  max-height: 100vh;
+  min-height: 0;
+  padding: 18px;
+  overflow: hidden;
+  background: #071928;
+}
+
+.tutorial-frame {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tutorial-image {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: min(100vh, 100%);
+  width: auto;
+  height: auto;
+  image-rendering: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.tutorial-status {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  gap: 18px;
+  overflow: hidden;
+  color: #fff4d1;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 3px 3px 0 #000;
 }
 
 .hud {
@@ -394,17 +444,23 @@ button {
 
 .tile.bridge {
   background-image: var(--tile-bridge), var(--tile-river);
-  background-size: 100% 100%, 100% 100%;
+  background-size:
+    100% 100%,
+    100% 100%;
 }
 
 .tile.tree {
   background-image: var(--tile-tree), var(--tile-grass);
-  background-size: 100% 100%, 100% 100%;
+  background-size:
+    100% 100%,
+    100% 100%;
 }
 
 .tile.rock {
   background-image: var(--tile-rock), var(--tile-grass);
-  background-size: 100% 100%, 100% 100%;
+  background-size:
+    100% 100%,
+    100% 100%;
 }
 
 .tile.sign {
@@ -439,7 +495,9 @@ button {
 
 .tile.camp {
   background-image: var(--tile-camp), var(--tile-sand);
-  background-size: 100% 100%, 100% 100%;
+  background-size:
+    100% 100%,
+    100% 100%;
 }
 
 .entity {
@@ -459,10 +517,17 @@ button {
   height: 19px;
   background-image:
     var(--tile-player),
-    linear-gradient(#2f2435 0 12%, #ffd08a 13% 37%, #2f73c4 38% 68%, #f2e2b5 69% 100%);
+    linear-gradient(
+      #2f2435 0 12%,
+      #ffd08a 13% 37%,
+      #2f73c4 38% 68%,
+      #f2e2b5 69% 100%
+    );
   background-repeat: no-repeat;
   background-position: center, center;
-  background-size: 100% 100%, 15px 18px;
+  background-size:
+    100% 100%,
+    15px 18px;
 }
 
 .plant {

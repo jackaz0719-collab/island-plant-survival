@@ -9,6 +9,15 @@
   const INITIAL_ECOSYSTEM = 3;
   const MAX_COLLECT = 3;
   const DAILY_PLANT_LIMIT = 16;
+  const TUTORIAL_SLIDES = [
+    "Image/slide/1.png",
+    "Image/slide/2.png",
+    "Image/slide/3.png",
+    "Image/slide/4.png",
+    "Image/slide/5.png",
+    "Image/slide/6.png",
+    "Image/slide/7.png",
+  ];
   const playerStart = { x: 24, y: 16 };
   const SIGN_MESSAGE =
     "救荒植物を食べて夜を越すのだ！それ以外を食べてしまうとおなか壊してしまうぞ。出来るだけ外来種は減らすことをおすすめするぞ。";
@@ -47,6 +56,7 @@
     nearbySign: null,
     signMessageVisible: false,
     pendingDayResult: null,
+    tutorialSlideIndex: 0,
     phase: "title",
     gameEnded: false,
   };
@@ -70,8 +80,19 @@
     state.nearbySign = null;
     state.signMessageVisible = false;
     state.pendingDayResult = null;
-    state.phase = "explore";
+    state.tutorialSlideIndex = 0;
+    state.phase = "tutorial";
     state.gameEnded = false;
+    SurvivalUI.renderTutorialSlide(
+      TUTORIAL_SLIDES[state.tutorialSlideIndex],
+      state.tutorialSlideIndex,
+      TUTORIAL_SLIDES.length,
+    );
+    SurvivalUI.showScreen("tutorial");
+  }
+
+  function startMainGame() {
+    state.phase = "explore";
     startDay();
     SurvivalUI.showScreen("game");
   }
@@ -327,6 +348,20 @@
       return;
     }
 
+    if (state.phase === "tutorial") {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        showNextTutorialSlide();
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showPreviousTutorialSlide();
+        return;
+      }
+    }
+
     if (
       state.phase === "dayResult" &&
       (event.key === "Enter" || event.key === " " || event.code === "Space")
@@ -375,6 +410,33 @@
 
     event.preventDefault();
     movePlayer(move[0], move[1]);
+  }
+
+  function showNextTutorialSlide() {
+    if (state.tutorialSlideIndex >= TUTORIAL_SLIDES.length - 1) {
+      startMainGame();
+      return;
+    }
+
+    state.tutorialSlideIndex += 1;
+    SurvivalUI.renderTutorialSlide(
+      TUTORIAL_SLIDES[state.tutorialSlideIndex],
+      state.tutorialSlideIndex,
+      TUTORIAL_SLIDES.length,
+    );
+  }
+
+  function showPreviousTutorialSlide() {
+    if (state.tutorialSlideIndex <= 0) {
+      return;
+    }
+
+    state.tutorialSlideIndex -= 1;
+    SurvivalUI.renderTutorialSlide(
+      TUTORIAL_SLIDES[state.tutorialSlideIndex],
+      state.tutorialSlideIndex,
+      TUTORIAL_SLIDES.length,
+    );
   }
 
   function movePlayer(dx, dy) {

@@ -6,11 +6,14 @@
   function cacheElements() {
     [
       "titleScreen",
+      "tutorialScreen",
       "gameScreen",
       "nightScreen",
       "dayResultScreen",
       "resultScreen",
       "startButton",
+      "tutorialImage",
+      "tutorialPageLabel",
       "restartButton",
       "dayLabel",
       "hpLabel",
@@ -43,10 +46,16 @@
 
   function showScreen(name) {
     elements.titleScreen.classList.toggle("hidden", name !== "title");
+    elements.tutorialScreen.classList.toggle("hidden", name !== "tutorial");
     elements.gameScreen.classList.toggle("hidden", name !== "game");
     elements.nightScreen.classList.toggle("hidden", name !== "night");
     elements.dayResultScreen.classList.toggle("hidden", name !== "dayResult");
     elements.resultScreen.classList.toggle("hidden", name !== "result");
+  }
+
+  function renderTutorialSlide(src, currentIndex, totalSlides) {
+    elements.tutorialImage.src = src;
+    elements.tutorialPageLabel.textContent = `${currentIndex + 1} / ${totalSlides}`;
   }
 
   function updateHud(state) {
@@ -273,6 +282,7 @@
     elements,
     cacheElements,
     showScreen,
+    renderTutorialSlide,
     updateHud,
     renderMap,
     renderInspector,
