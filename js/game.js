@@ -68,6 +68,7 @@
 
   function init() {
     SurvivalUI.cacheElements();
+    SurvivalUI.elements.startButton.dataset.sound = "start";
     SurvivalUI.setupButtonSound();
     SurvivalUI.elements.startButton.addEventListener("click", () => {
       SurvivalUI.playStartSound();
@@ -358,6 +359,7 @@
   function handleKeyDown(event) {
     if (state.phase === "title" && event.key === "Enter" && !state.gameEnded) {
       event.preventDefault();
+      SurvivalUI.playStartSound();
       startGame();
       return;
     }

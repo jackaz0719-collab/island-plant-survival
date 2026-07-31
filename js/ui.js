@@ -93,6 +93,10 @@
             return;
           }
 
+          if (button.dataset.sound === "start") {
+            return;
+          }
+
           playButtonSound();
         },
         true,
