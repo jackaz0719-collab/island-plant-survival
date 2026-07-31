@@ -2,18 +2,22 @@
   "use strict";
 
   const elements = {};
-  const buttonSound = new Audio("%E3%83%9D%E3%83%94.mp3");
+  const buttonSound = new Audio("Audio/button.mp3");
   buttonSound.preload = "auto";
   buttonSound.volume = 0.75;
   const resultSounds = {
-    clear: new Audio("%E5%A4%A7%E5%8B%A2%E3%81%A7%E6%8B%8D%E6%89%8B.mp3"),
-    gameOver: new Audio("%E9%81%8B%E5%91%BD1.mp3"),
+    clear: new Audio("Audio/clear.mp3"),
+    gameOver: new Audio("Audio/gameover.mp3"),
   };
   Object.values(resultSounds).forEach((sound) => {
     sound.preload = "auto";
     sound.volume = 0.85;
   });
   let buttonSoundSetup = false;
+  let lastButtonSoundTime = 0;
+  let dayResultContinueAction = null;
+  let dayResultContinueLocked = false;
+  let dayResultContinueSetup = false;
 
   function cacheElements() {
     [
@@ -258,19 +262,102 @@
     }
 
     buttonSoundSetup = true;
-    document.addEventListener(
-      "pointerup",
-      (event) => {
-        const button = event.target.closest("button");
-        if (!button || button.disabled) {
-          return;
-        }
+    ["pointerdown", "touchstart", "click"].forEach((eventName) => {
+      document.addEventListener(
+        eventName,
+        (event) => {
+          const button = event.target.closest("button");
+          if (!button || button.disabled) {
+            return;
+          }
 
-        buttonSound.currentTime = 0;
-        buttonSound.play().catch(() => {});
-      },
-      true,
+          playButtonSound();
+        },
+        true,
+      );
+    });
+  }
+
+  function playButtonSound() {
+    const now = Date.now();
+    if (now - lastButtonSoundTime < 120) {
+      return;
+    }
+
+    lastButtonSoundTime = now;
+    playSound(buttonSound);
+  }
+
+  function setupDayResultContinueControls() {
+    if (dayResultContinueSetup) {
+      return;
+    }
+
+    dayResultContinueSetup = true;
+    ["pointerup", "touchend", "click"].forEach((eventName) => {
+      document.addEventListener(eventName, handleDayResultContinueInput, true);
+    });
+  }
+
+  function handleDayResultContinueInput(event) {
+    if (!dayResultContinueAction || !isVisible(elements.dayResultScreen)) {
+      return;
+    }
+
+    const button = elements.dayResultContinueButton;
+    const point = getEventPoint(event);
+    const tappedButton = event.target.closest("#dayResultContinueButton");
+    if (!tappedButton && point && !isPointInElement(point, button)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    continueAfterDayResult();
+  }
+
+  function getEventPoint(event) {
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (touch) {
+      return { x: touch.clientX, y: touch.clientY };
+    }
+
+    if (typeof event.clientX === "number" && typeof event.clientY === "number") {
+      return { x: event.clientX, y: event.clientY };
+    }
+
+    return null;
+  }
+
+  function isPointInElement(point, element) {
+    const rect = element.getBoundingClientRect();
+    return (
+      point.x >= rect.left &&
+      point.x <= rect.right &&
+      point.y >= rect.top &&
+      point.y <= rect.bottom
     );
+  }
+
+  function continueAfterDayResult() {
+    if (dayResultContinueLocked || !dayResultContinueAction) {
+      return;
+    }
+
+    dayResultContinueLocked = true;
+    const action = dayResultContinueAction;
+    dayResultContinueAction = null;
+    action();
+  }
+
+  function playSound(sound) {
+    try {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.play().catch(() => {});
+    } catch (error) {
+      // Audio can fail on some mobile browsers until a direct user gesture.
+    }
   }
 
   function stopResultSounds() {
@@ -283,8 +370,7 @@
   function playResultSound(win) {
     stopResultSounds();
     const sound = win ? resultSounds.clear : resultSounds.gameOver;
-    sound.currentTime = 0;
-    sound.play().catch(() => {});
+    playSound(sound);
   }
 
   function showImagePreview(src, alt) {
@@ -391,18 +477,14 @@
       elements.dayResultDetails.appendChild(item);
     });
 
-    let didContinue = false;
+    dayResultContinueLocked = false;
+    dayResultContinueAction = onContinue;
     const continueOnce = (event) => {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
-      if (didContinue) {
-        return;
-      }
-
-      didContinue = true;
-      onContinue();
+      continueAfterDayResult();
     };
 
     elements.dayResultContinueButton.onclick = continueOnce;
@@ -434,6 +516,7 @@
     cacheElements,
     setupImagePreview,
     setupButtonSound,
+    setupDayResultContinueControls,
     stopResultSounds,
     playResultSound,
     showScreen,

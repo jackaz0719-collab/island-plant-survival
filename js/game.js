@@ -79,6 +79,7 @@
     SurvivalUI.cacheElements();
     SurvivalUI.setupImagePreview();
     SurvivalUI.setupButtonSound();
+    SurvivalUI.setupDayResultContinueControls();
     SurvivalUI.elements.startButton.addEventListener("click", startGame);
     SurvivalUI.elements.restartButton.addEventListener("click", startGame);
     SurvivalUI.elements.finishExploreButton.addEventListener(
