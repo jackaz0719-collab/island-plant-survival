@@ -68,6 +68,7 @@
     nearbyCamp: null,
     signMessageVisible: false,
     campMessage: null,
+    campMessageIndex: 0,
     pendingDayResult: null,
     tutorialSlideIndex: 0,
     phase: "title",
@@ -100,6 +101,7 @@
     state.nearbyCamp = null;
     state.signMessageVisible = false;
     state.campMessage = null;
+    state.campMessageIndex = 0;
     state.pendingDayResult = null;
     state.tutorialSlideIndex = 0;
     state.phase = "tutorial";
@@ -557,7 +559,9 @@
     }
 
     state.signMessageVisible = false;
-    state.campMessage = randomItem(HOUSE_MESSAGES);
+    state.campMessage = HOUSE_MESSAGES[state.campMessageIndex];
+    state.campMessageIndex =
+      (state.campMessageIndex + 1) % HOUSE_MESSAGES.length;
     render();
   }
 
@@ -860,10 +864,6 @@
       [items[i], items[j]] = [items[j], items[i]];
     }
     return items;
-  }
-
-  function randomItem(items) {
-    return items[Math.floor(Math.random() * items.length)];
   }
 
   document.addEventListener("DOMContentLoaded", init);
