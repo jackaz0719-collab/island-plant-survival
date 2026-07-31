@@ -369,7 +369,22 @@
       elements.dayResultDetails.appendChild(item);
     });
 
-    elements.dayResultContinueButton.onclick = onContinue;
+    let didContinue = false;
+    const continueOnce = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (didContinue) {
+        return;
+      }
+
+      didContinue = true;
+      onContinue();
+    };
+
+    elements.dayResultContinueButton.onclick = continueOnce;
+    elements.dayResultContinueButton.onpointerup = continueOnce;
   }
 
   function makeResultLine(label, value, negative) {
