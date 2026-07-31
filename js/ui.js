@@ -157,9 +157,13 @@
           state.nearbySign &&
           state.nearbySign.x === x &&
           state.nearbySign.y === y;
+        const isNearbyCamp =
+          state.nearbyCamp &&
+          state.nearbyCamp.x === x &&
+          state.nearbyCamp.y === y;
 
         tile.className = makeTileClass(state.tiles[y][x]);
-        if (isNearby || isNearbySign) {
+        if (isNearby || isNearbySign || isNearbyCamp) {
           tile.classList.add("nearby");
         }
 
@@ -182,9 +186,32 @@
     }
 
     elements.map.appendChild(fragment);
+    centerMapOnPlayer(state);
   }
 
-  function renderInspector(plant, onCollect, sign, onReadSign) {
+  function centerMapOnPlayer(state) {
+    window.requestAnimationFrame(() => {
+      const mapPanel = elements.map.parentElement;
+      const firstTile = elements.map.firstElementChild;
+      if (!mapPanel || !firstTile) {
+        return;
+      }
+
+      const tileRect = firstTile.getBoundingClientRect();
+      const tileWidth = tileRect.width;
+      const tileHeight = tileRect.height;
+      if (!tileWidth || !tileHeight) {
+        return;
+      }
+
+      const playerCenterX = (state.player.x + 0.5) * tileWidth;
+      const playerCenterY = (state.player.y + 0.5) * tileHeight;
+      mapPanel.scrollLeft = playerCenterX - mapPanel.clientWidth / 2;
+      mapPanel.scrollTop = playerCenterY - mapPanel.clientHeight / 2;
+    });
+  }
+
+  function renderInspector(plant, onCollect, sign, onReadSign, camp, onReadCamp) {
     elements.collectButton.onclick = null;
 
     if (sign) {
@@ -196,6 +223,18 @@
       elements.collectButton.disabled = false;
       elements.collectButton.textContent = "Enterで看板を読む";
       elements.collectButton.onclick = onReadSign;
+      return;
+    }
+
+    if (camp) {
+      elements.plantInspector.classList.add("empty");
+      elements.plantImageBox.classList.add("hidden");
+      elements.plantImageBox.textContent = "";
+      elements.plantName.textContent = "家";
+      elements.plantDescription.textContent = "何か書かれているようです。";
+      elements.collectButton.disabled = false;
+      elements.collectButton.textContent = "Enterで読む";
+      elements.collectButton.onclick = onReadCamp;
       return;
     }
 

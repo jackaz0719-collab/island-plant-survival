@@ -374,7 +374,8 @@ button {
 .map-panel {
   position: relative;
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: start;
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
@@ -384,7 +385,7 @@ button {
   padding: 2px;
   background: #0b527f;
   border: 5px solid var(--line);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .map-guide {
