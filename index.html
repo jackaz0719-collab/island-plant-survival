@@ -7,6 +7,20 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <script>
+      [
+        "Image/slide/1.png",
+        "Image/slide/2.png",
+        "Image/slide/3.png",
+        "Image/slide/4.png",
+        "Image/slide/5.png",
+        "Image/slide/6.png",
+        "Image/slide/7.png",
+      ].forEach((src) => {
+        const image = new Image();
+        image.src = src;
+      });
+    </script>
     <div id="app" class="app">
       <section id="titleScreen" class="screen title-screen">
         <div class="title-scene" aria-hidden="true">
@@ -30,7 +44,7 @@
               救荒植物：飢饉や戦争などで食料が不足した際に、その不足をしのぐために一時的に食料として利用される植物
             </p>
           </div>
-          <p>画像：一部画像は Google Gemini を利用して作成</p>
+          <p>画像：一部画像は ChatGPT Plus を利用して作成</p>
         </div>
       </section>
 
@@ -73,7 +87,11 @@
         <main class="play-layout">
           <section class="map-panel" aria-label="無人島マップ">
             <div id="map" class="map"></div>
-            <div id="virtualStick" class="virtual-stick hidden" aria-hidden="true">
+            <div
+              id="virtualStick"
+              class="virtual-stick hidden"
+              aria-hidden="true"
+            >
               <span id="virtualStickKnob" class="virtual-stick-knob"></span>
             </div>
           </section>
@@ -108,7 +126,6 @@
             採取
           </button>
         </main>
-        <div class="landscape-hint" aria-hidden="true">横向き推奨</div>
       </section>
 
       <section id="nightScreen" class="screen night-screen hidden">

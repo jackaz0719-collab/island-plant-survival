@@ -58,7 +58,6 @@ button {
 
 .virtual-stick,
 .mobile-action-button,
-.landscape-hint,
 .tutorial-tap-hint {
   display: none;
 }
@@ -1229,12 +1228,9 @@ button {
     box-shadow: 0 6px 0 #9e2d1c;
   }
 
-  .landscape-hint {
-    display: none;
-  }
-
   .tutorial-screen {
-    touch-action: pan-y;
+    touch-action: none;
+    user-select: none;
   }
 
   .title-screen {
@@ -1306,36 +1302,273 @@ button {
 }
 
 @media (hover: none) and (orientation: portrait), (pointer: coarse) and (orientation: portrait) {
+  html,
+  body,
+  .app {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
   .game-screen {
-    overflow: auto;
+    gap: 0;
+    padding: 0;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .hud {
+    position: relative;
+    z-index: 12;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+    height: 54px;
+    background: var(--line);
+  }
+
+  .hud-block {
+    display: grid;
+    align-content: center;
+    min-height: 54px;
+    padding: 4px 5px;
+    border-width: 3px;
+    box-shadow: none;
+  }
+
+  .hud-block:last-child {
+    display: none;
+  }
+
+  .hud-label {
+    font-size: 9px;
+  }
+
+  .hud strong {
+    min-height: 0;
+    font-size: 14px;
+    line-height: 1.15;
   }
 
   .play-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(320px, 56vh) 76px auto;
+    position: relative;
+    display: block;
+    flex: 1 1 auto;
+    height: calc(100dvh - 54px);
+    min-height: 0;
+    overflow: hidden;
+    background: #0b527f;
+  }
+
+  .map-panel {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-items: start;
+    justify-items: start;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    border-width: 3px;
+    overflow: auto;
+    scrollbar-width: none;
+    background: #0b527f;
+  }
+
+  .map-panel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .map {
+    --mobile-tile-size: clamp(28px, 9vw, 42px);
+    grid-template-columns: repeat(48, var(--mobile-tile-size));
+    grid-template-rows: repeat(32, var(--mobile-tile-size));
+    border-width: 3px;
+    box-shadow: none;
+  }
+
+  .tile {
+    width: var(--mobile-tile-size);
+    height: var(--mobile-tile-size);
+  }
+
+  .entity {
+    left: calc(var(--mobile-tile-size) * 0.05);
+    width: calc(var(--mobile-tile-size) * 0.9);
+    height: calc(var(--mobile-tile-size) * 0.95);
+  }
+
+  .player {
+    width: calc(var(--mobile-tile-size) * 0.9);
+    height: var(--mobile-tile-size);
+    background-size:
+      100% 100%,
+      calc(var(--mobile-tile-size) * 0.8) calc(var(--mobile-tile-size) * 0.95);
+  }
+
+  .plant {
+    left: calc(var(--mobile-tile-size) * 0.15);
+    top: calc(var(--mobile-tile-size) * 0.15);
+    width: calc(var(--mobile-tile-size) * 0.7);
+    height: calc(var(--mobile-tile-size) * 0.75);
+  }
+
+  .plant::before {
+    left: calc(var(--mobile-tile-size) * 0.24);
+    top: calc(var(--mobile-tile-size) * 0.25);
+    width: calc(var(--mobile-tile-size) * 0.16);
+    height: calc(var(--mobile-tile-size) * 0.42);
+    border-width: max(1px, calc(var(--mobile-tile-size) * 0.08));
+  }
+
+  .plant::after {
+    left: 0;
+    top: 0;
+    width: calc(var(--mobile-tile-size) * 0.68);
+    height: calc(var(--mobile-tile-size) * 0.45);
+    border-width: max(1px, calc(var(--mobile-tile-size) * 0.08));
+    border-radius: 0 calc(var(--mobile-tile-size) * 0.25) 0 calc(var(--mobile-tile-size) * 0.25);
+  }
+
+  .tile.sign::before {
+    left: calc(var(--mobile-tile-size) * 0.45);
+    top: calc(var(--mobile-tile-size) * 0.48);
+    width: calc(var(--mobile-tile-size) * 0.2);
+    height: calc(var(--mobile-tile-size) * 0.55);
+    border-width: max(1px, calc(var(--mobile-tile-size) * 0.08));
+  }
+
+  .tile.sign::after {
+    left: calc(var(--mobile-tile-size) * 0.1);
+    top: calc(var(--mobile-tile-size) * 0.12);
+    width: calc(var(--mobile-tile-size) * 0.9);
+    height: calc(var(--mobile-tile-size) * 0.45);
+    border-width: max(1px, calc(var(--mobile-tile-size) * 0.1));
+    box-shadow: inset calc(var(--mobile-tile-size) * 0.18) 0 0 rgba(255, 235, 160, 0.55);
   }
 
   .side-panel {
-    grid-column: 1;
-    grid-row: 3;
-    max-height: 44vh;
-  }
-
-  .landscape-hint {
-    position: fixed;
-    top: max(8px, env(safe-area-inset-top));
-    left: 50%;
-    z-index: 29;
+    position: absolute;
+    z-index: 16;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
     display: block;
-    transform: translateX(-50%);
-    padding: 5px 10px;
-    background: rgba(255, 244, 209, 0.9);
-    border: 3px solid var(--line);
-    color: var(--ink);
-    font-size: 12px;
-    font-weight: 900;
+    min-height: 0;
+    overflow: visible;
     pointer-events: none;
   }
+
+  .side-panel .panel-section:first-child {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    gap: 8px;
+    padding: 8px;
+    border-width: 4px;
+    box-shadow: none;
+    pointer-events: auto;
+  }
+
+  .side-panel .panel-section:first-child h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .bag-list {
+    height: 34px;
+    min-height: 34px;
+    max-height: 34px;
+    margin: 0;
+    overflow-y: auto;
+  }
+
+  .bag-list li {
+    margin: 0;
+    padding: 5px 7px;
+    font-size: 12px;
+  }
+
+  .danger-button {
+    min-height: 48px;
+    border-width: 3px;
+    box-shadow: 0 5px 0 #272032;
+    font-size: 16px;
+  }
+
+  .inspector {
+    position: absolute;
+    right: 12px;
+    bottom: 186px;
+    width: 96px;
+    height: 96px;
+    min-height: 0;
+    max-height: 96px;
+    padding: 5px;
+    border-width: 3px;
+    box-shadow: none;
+    pointer-events: auto;
+  }
+
+  .inspector.empty {
+    display: none !important;
+  }
+
+  .inspector h2 {
+    display: none;
+  }
+
+  .inspector h3 {
+    display: none;
+  }
+
+  .inspector p {
+    display: none;
+  }
+
+  .plant-image-box {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    flex-basis: auto;
+    margin: 0;
+    padding: 4px;
+    border-width: 3px;
+  }
+
+  .map-guide {
+    position: absolute;
+    z-index: 15;
+    left: 10px;
+    right: 10px;
+    bottom: 98px;
+    min-height: 78px;
+    max-height: 78px;
+    padding: 11px;
+    border-width: 4px;
+    box-shadow: none;
+  }
+
+  .map-guide-description {
+    max-height: 48px;
+    font-size: 16px;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .mobile-action-button {
+    right: 20px;
+    bottom: 24px;
+    min-width: 106px;
+    min-height: 54px;
+    z-index: 19;
+  }
+
 }
 
 @media (hover: none) and (orientation: landscape), (pointer: coarse) and (orientation: landscape) {
@@ -1725,9 +1958,4 @@ button {
 :-webkit-full-screen .mobile-action-button {
   position: fixed;
   z-index: 9998;
-}
-
-:fullscreen .landscape-hint,
-:-webkit-full-screen .landscape-hint {
-  z-index: 9997;
 }

@@ -41,8 +41,8 @@
   };
   const STICK_DEAD_ZONE = 22;
   const STICK_MAX_OFFSET = 38;
-  const STICK_INITIAL_REPEAT_DELAY_MS = 360;
-  const STICK_REPEAT_MS = 230;
+  const STICK_INITIAL_REPEAT_DELAY_MS = 240;
+  const STICK_REPEAT_MS = 155;
 
   const state = {
     day: 1,
@@ -134,7 +134,7 @@
 
   function setupTutorialTap() {
     const tutorialScreen = SurvivalUI.elements.tutorialScreen;
-    tutorialScreen.addEventListener("pointerup", handleTutorialTap);
+    tutorialScreen.addEventListener("pointerdown", handleTutorialTap);
   }
 
   function isTouchLayout() {

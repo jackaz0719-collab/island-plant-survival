@@ -140,8 +140,16 @@
       const playerCenterY = (state.player.y + 0.5) * tileHeight;
       const sidePanel = elements.plantInspector.parentElement;
       const guide = elements.phaseText.parentElement;
-      const coveredRight = isVisible(sidePanel) ? sidePanel.offsetWidth : 0;
-      const coveredBottom = isVisible(guide) ? guide.offsetHeight : 0;
+      const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+      const bagPanel = sidePanel ? sidePanel.firstElementChild : null;
+      const coveredRight =
+        !isPortrait && isVisible(sidePanel) ? sidePanel.offsetWidth : 0;
+      const coveredBottom = isPortrait
+        ? (isVisible(bagPanel) ? bagPanel.offsetHeight : 0) +
+          (isVisible(guide) ? guide.offsetHeight : 0)
+        : isVisible(guide)
+          ? guide.offsetHeight
+          : 0;
       const visibleWidth = Math.max(1, mapPanel.clientWidth - coveredRight);
       const visibleHeight = Math.max(1, mapPanel.clientHeight - coveredBottom);
       mapPanel.scrollLeft = playerCenterX - visibleWidth / 2;
