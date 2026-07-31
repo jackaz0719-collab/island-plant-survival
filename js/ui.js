@@ -2,14 +2,9 @@
   "use strict";
 
   const elements = {};
-  const BUTTON_SOUND_POOL_SIZE = 4;
-  const buttonSounds = Array.from({ length: BUTTON_SOUND_POOL_SIZE }, () =>
-    new Audio("Audio/button.mp3"),
-  );
-  buttonSounds.forEach((sound) => {
-    sound.preload = "auto";
-    sound.volume = 0.75;
-  });
+  const buttonSound = new Audio("Audio/button.mp3");
+  buttonSound.preload = "auto";
+  buttonSound.volume = 0.75;
   const resultSounds = {
     clear: new Audio("Audio/clear.mp3"),
     gameOver: new Audio("Audio/gameover.mp3"),
@@ -19,7 +14,6 @@
     sound.volume = 0.85;
   });
   let buttonSoundSetup = false;
-  let buttonSoundIndex = 0;
   let lastButtonSoundTime = 0;
   let dayResultContinueAction = null;
   let dayResultContinueLocked = false;
@@ -315,9 +309,7 @@
     }
 
     lastButtonSoundTime = now;
-    const sound = buttonSounds[buttonSoundIndex];
-    buttonSoundIndex = (buttonSoundIndex + 1) % buttonSounds.length;
-    playSound(sound);
+    playSound(buttonSound);
   }
 
   function setupDayResultContinueControls() {
