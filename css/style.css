@@ -1573,8 +1573,9 @@ button {
 
   .inspector {
     position: absolute;
-    right: 12px;
-    bottom: 186px;
+    left: 23px;
+    right: auto;
+    bottom: 252px;
     width: 96px;
     height: 96px;
     min-height: 0;
