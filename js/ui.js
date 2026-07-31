@@ -5,6 +5,14 @@
   const buttonSound = new Audio("%E3%83%9D%E3%83%94.mp3");
   buttonSound.preload = "auto";
   buttonSound.volume = 0.75;
+  const resultSounds = {
+    clear: new Audio("%E5%A4%A7%E5%8B%A2%E3%81%A7%E6%8B%8D%E6%89%8B.mp3"),
+    gameOver: new Audio("%E9%81%8B%E5%91%BD1.mp3"),
+  };
+  Object.values(resultSounds).forEach((sound) => {
+    sound.preload = "auto";
+    sound.volume = 0.85;
+  });
   let buttonSoundSetup = false;
 
   function cacheElements() {
@@ -265,6 +273,20 @@
     );
   }
 
+  function stopResultSounds() {
+    Object.values(resultSounds).forEach((sound) => {
+      sound.pause();
+      sound.currentTime = 0;
+    });
+  }
+
+  function playResultSound(win) {
+    stopResultSounds();
+    const sound = win ? resultSounds.clear : resultSounds.gameOver;
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+  }
+
   function showImagePreview(src, alt) {
     elements.imagePreview.src = src;
     elements.imagePreview.alt = alt;
@@ -412,6 +434,8 @@
     cacheElements,
     setupImagePreview,
     setupButtonSound,
+    stopResultSounds,
+    playResultSound,
     showScreen,
     renderTutorialSlide,
     updateHud,

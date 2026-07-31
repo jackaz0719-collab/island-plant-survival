@@ -91,6 +91,7 @@
   }
 
   function startGame() {
+    SurvivalUI.stopResultSounds();
     state.day = 1;
     state.hp = INITIAL_HP;
     state.ecosystem = INITIAL_ECOSYSTEM;
@@ -892,6 +893,7 @@
     resetStickControls();
     SurvivalUI.renderResult(win, text);
     SurvivalUI.showScreen("result");
+    SurvivalUI.playResultSound(win);
   }
 
   function render() {
