@@ -2,6 +2,19 @@
   "use strict";
 
   const elements = {};
+  const buttonSound = new Audio("Audio/button.mp3");
+  buttonSound.preload = "auto";
+  buttonSound.volume = 0.75;
+  const resultSounds = {
+    clear: new Audio("Audio/clear.mp3"),
+    gameOver: new Audio("Audio/gameover.mp3"),
+  };
+  Object.values(resultSounds).forEach((sound) => {
+    sound.preload = "auto";
+    sound.volume = 0.85;
+  });
+  let buttonSoundSetup = false;
+  let lastButtonSoundTime = 0;
 
   function cacheElements() {
     [
@@ -51,6 +64,60 @@
     elements.nightScreen.classList.toggle("hidden", name !== "night");
     elements.dayResultScreen.classList.toggle("hidden", name !== "dayResult");
     elements.resultScreen.classList.toggle("hidden", name !== "result");
+  }
+
+  function setupButtonSound() {
+    if (buttonSoundSetup) {
+      return;
+    }
+
+    buttonSoundSetup = true;
+    ["pointerdown", "touchstart", "click"].forEach((eventName) => {
+      document.addEventListener(
+        eventName,
+        (event) => {
+          const button = event.target.closest("button");
+          if (!button || button.disabled) {
+            return;
+          }
+
+          playButtonSound();
+        },
+        true,
+      );
+    });
+  }
+
+  function playButtonSound() {
+    const now = Date.now();
+    if (now - lastButtonSoundTime < 120) {
+      return;
+    }
+
+    lastButtonSoundTime = now;
+    playSound(buttonSound);
+  }
+
+  function stopResultSounds() {
+    Object.values(resultSounds).forEach((sound) => {
+      sound.pause();
+      sound.currentTime = 0;
+    });
+  }
+
+  function playResultSound(win) {
+    stopResultSounds();
+    playSound(win ? resultSounds.clear : resultSounds.gameOver);
+  }
+
+  function playSound(sound) {
+    try {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.play().catch(() => {});
+    } catch (error) {
+      // Audio can fail until the browser receives a user gesture.
+    }
   }
 
   function renderTutorialSlide(src, currentIndex, totalSlides) {
@@ -281,6 +348,9 @@
   window.SurvivalUI = {
     elements,
     cacheElements,
+    setupButtonSound,
+    stopResultSounds,
+    playResultSound,
     showScreen,
     renderTutorialSlide,
     updateHud,

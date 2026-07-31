@@ -63,6 +63,7 @@
 
   function init() {
     SurvivalUI.cacheElements();
+    SurvivalUI.setupButtonSound();
     SurvivalUI.elements.startButton.addEventListener("click", startGame);
     SurvivalUI.elements.restartButton.addEventListener("click", startGame);
     SurvivalUI.elements.finishExploreButton.addEventListener(
@@ -74,6 +75,7 @@
   }
 
   function startGame() {
+    SurvivalUI.stopResultSounds();
     state.day = 1;
     state.hp = INITIAL_HP;
     state.ecosystem = INITIAL_ECOSYSTEM;
@@ -718,6 +720,7 @@
     state.phase = "result";
     SurvivalUI.renderResult(win, text);
     SurvivalUI.showScreen("result");
+    SurvivalUI.playResultSound(win);
   }
 
   function render() {
