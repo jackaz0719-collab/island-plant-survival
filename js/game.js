@@ -72,6 +72,7 @@
     nearbyCamp: null,
     signMessageVisible: false,
     campMessage: null,
+    campMessageIndex: 0,
     pendingDayResult: null,
     tutorialSlideIndex: 0,
     phase: "title",
@@ -91,9 +92,13 @@
   function init() {
     SurvivalUI.cacheElements();
     SurvivalUI.setupImagePreview();
+    SurvivalUI.elements.startButton.dataset.sound = "start";
     SurvivalUI.setupButtonSound();
     SurvivalUI.setupDayResultContinueControls();
-    SurvivalUI.elements.startButton.addEventListener("click", startGame);
+    SurvivalUI.elements.startButton.addEventListener("click", () => {
+      SurvivalUI.playStartSound();
+      startGame();
+    });
     SurvivalUI.elements.restartButton.addEventListener("click", startGame);
     SurvivalUI.elements.finishExploreButton.addEventListener(
       "click",
@@ -113,6 +118,7 @@
     state.nearbyCamp = null;
     state.signMessageVisible = false;
     state.campMessage = null;
+    state.campMessageIndex = 0;
     state.pendingDayResult = null;
     state.tutorialSlideIndex = 0;
     state.phase = "tutorial";
@@ -725,7 +731,9 @@
     }
 
     state.signMessageVisible = false;
-    state.campMessage = randomItem(HOUSE_MESSAGES);
+    state.campMessage = HOUSE_MESSAGES[state.campMessageIndex];
+    state.campMessageIndex =
+      (state.campMessageIndex + 1) % HOUSE_MESSAGES.length;
     render();
   }
 
@@ -1042,10 +1050,6 @@
       [items[i], items[j]] = [items[j], items[i]];
     }
     return items;
-  }
-
-  function randomItem(items) {
-    return items[Math.floor(Math.random() * items.length)];
   }
 
   document.addEventListener("DOMContentLoaded", init);
