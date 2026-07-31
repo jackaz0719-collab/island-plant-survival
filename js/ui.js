@@ -32,6 +32,9 @@
       "mobileActionButton",
       "virtualStick",
       "virtualStickKnob",
+      "imagePreviewOverlay",
+      "imagePreviewCloseButton",
+      "imagePreview",
       "nightTitle",
       "nightText",
       "nightChoices",
@@ -172,6 +175,7 @@
       elements.plantInspector.classList.add("empty");
       elements.plantImageBox.classList.add("hidden");
       elements.plantImageBox.textContent = "";
+      elements.plantImageBox.onclick = null;
       elements.plantName.textContent = "看板";
       elements.plantDescription.textContent = "島で生き延びるためのヒントが書かれています。";
       elements.mobileActionButton.textContent = "読む";
@@ -190,6 +194,7 @@
       elements.plantInspector.classList.add("empty");
       elements.plantImageBox.classList.add("hidden");
       elements.plantImageBox.textContent = "";
+      elements.plantImageBox.onclick = null;
       elements.plantName.textContent = "近くに採取可能な植物はありません";
       elements.plantDescription.textContent = "植物に近づくと調査できます。";
       return;
@@ -199,6 +204,9 @@
     elements.plantInspector.classList.remove("hidden");
     elements.plantImageBox.classList.remove("hidden");
     renderPlantImage(elements.plantImageBox, plant.data.name);
+    elements.plantImageBox.onclick = () => {
+      showImagePreview(PlantData.imagePath(plant.data.name), plant.data.name);
+    };
     elements.plantName.textContent = plant.data.name;
     elements.plantDescription.textContent =
       plant.data.note || "説明はまだ登録されていません。";
@@ -221,6 +229,25 @@
       container.textContent = "画像が設定されていません";
     };
     container.appendChild(image);
+  }
+
+  function setupImagePreview() {
+    elements.imagePreviewCloseButton.addEventListener("pointerup", (event) => {
+      event.preventDefault();
+      hideImagePreview();
+    });
+  }
+
+  function showImagePreview(src, alt) {
+    elements.imagePreview.src = src;
+    elements.imagePreview.alt = alt;
+    elements.imagePreviewOverlay.classList.remove("hidden");
+  }
+
+  function hideImagePreview() {
+    elements.imagePreviewOverlay.classList.add("hidden");
+    elements.imagePreview.removeAttribute("src");
+    elements.imagePreview.alt = "";
   }
 
   function renderBag(collected) {
@@ -272,6 +299,8 @@
   }
 
   function renderDayResult(summary, onContinue) {
+    elements.dayResultContinueButton.textContent =
+      summary.finalAction === "nextDay" ? "次の日へ" : "結果を見る";
     elements.dayResultTitle.textContent = summary.eatenPlant
       ? `${summary.eatenPlant.name}を食べた`
       : "食べる植物がありませんでした";
@@ -339,6 +368,7 @@
   window.SurvivalUI = {
     elements,
     cacheElements,
+    setupImagePreview,
     showScreen,
     renderTutorialSlide,
     updateHud,

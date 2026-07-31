@@ -125,6 +125,19 @@
           >
             採取
           </button>
+          <div id="imagePreviewOverlay" class="image-preview-overlay hidden">
+            <div class="image-preview-panel">
+              <button
+                id="imagePreviewCloseButton"
+                class="image-preview-close-button"
+                type="button"
+                aria-label="閉じる"
+              >
+                ×
+              </button>
+              <img id="imagePreview" class="image-preview" alt="" />
+            </div>
+          </div>
         </main>
       </section>
 
@@ -139,7 +152,7 @@
 
       <section id="dayResultScreen" class="screen day-result-screen hidden">
         <div class="day-result-panel">
-          <p class="eyebrow">DAY RESULT</p>
+          <p class="eyebrow">本日の結果</p>
           <h2 id="dayResultTitle">今日の結果</h2>
           <div class="day-result-content">
             <div id="dayResultImageBox" class="day-result-image-box"></div>
