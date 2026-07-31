@@ -2,6 +2,10 @@
   "use strict";
 
   const elements = {};
+  const buttonSound = new Audio("%E3%83%9D%E3%83%94.mp3");
+  buttonSound.preload = "auto";
+  buttonSound.volume = 0.75;
+  let buttonSoundSetup = false;
 
   function cacheElements() {
     [
@@ -240,6 +244,27 @@
     });
   }
 
+  function setupButtonSound() {
+    if (buttonSoundSetup) {
+      return;
+    }
+
+    buttonSoundSetup = true;
+    document.addEventListener(
+      "pointerup",
+      (event) => {
+        const button = event.target.closest("button");
+        if (!button || button.disabled) {
+          return;
+        }
+
+        buttonSound.currentTime = 0;
+        buttonSound.play().catch(() => {});
+      },
+      true,
+    );
+  }
+
   function showImagePreview(src, alt) {
     elements.imagePreview.src = src;
     elements.imagePreview.alt = alt;
@@ -371,6 +396,7 @@
     elements,
     cacheElements,
     setupImagePreview,
+    setupButtonSound,
     showScreen,
     renderTutorialSlide,
     updateHud,
