@@ -14,6 +14,7 @@
       "startButton",
       "tutorialImage",
       "tutorialPageLabel",
+      "tutorialTapHint",
       "restartButton",
       "dayLabel",
       "hpLabel",
@@ -26,9 +27,11 @@
       "plantImageBox",
       "plantName",
       "plantDescription",
-      "collectButton",
       "bagList",
       "finishExploreButton",
+      "mobileActionButton",
+      "virtualStick",
+      "virtualStickKnob",
       "nightTitle",
       "nightText",
       "nightChoices",
@@ -115,43 +118,90 @@
     }
 
     elements.map.appendChild(fragment);
+    centerMapOnPlayer(state);
+  }
+
+  function centerMapOnPlayer(state) {
+    window.requestAnimationFrame(() => {
+      const mapPanel = elements.map.parentElement;
+      const firstTile = elements.map.firstElementChild;
+      if (!mapPanel || !firstTile) {
+        return;
+      }
+
+      const tileRect = firstTile.getBoundingClientRect();
+      const tileWidth = tileRect.width;
+      const tileHeight = tileRect.height;
+      if (!tileWidth || !tileHeight) {
+        return;
+      }
+
+      const playerCenterX = (state.player.x + 0.5) * tileWidth;
+      const playerCenterY = (state.player.y + 0.5) * tileHeight;
+      const sidePanel = elements.plantInspector.parentElement;
+      const guide = elements.phaseText.parentElement;
+      const coveredRight = isVisible(sidePanel) ? sidePanel.offsetWidth : 0;
+      const coveredBottom = isVisible(guide) ? guide.offsetHeight : 0;
+      const visibleWidth = Math.max(1, mapPanel.clientWidth - coveredRight);
+      const visibleHeight = Math.max(1, mapPanel.clientHeight - coveredBottom);
+      mapPanel.scrollLeft = playerCenterX - visibleWidth / 2;
+      mapPanel.scrollTop = playerCenterY - visibleHeight / 2;
+    });
+  }
+
+  function isVisible(element) {
+    return element && !element.classList.contains("hidden");
   }
 
   function renderInspector(plant, onCollect, sign, onReadSign) {
-    elements.collectButton.onclick = null;
+    elements.mobileActionButton.onclick = null;
+    elements.mobileActionButton.onpointerup = null;
+    elements.mobileActionButton.classList.add("hidden");
+    elements.mobileActionButton.classList.remove("is-ready");
 
     if (sign) {
+      elements.plantInspector.classList.remove("hidden");
       elements.plantInspector.classList.add("empty");
       elements.plantImageBox.classList.add("hidden");
       elements.plantImageBox.textContent = "";
       elements.plantName.textContent = "看板";
       elements.plantDescription.textContent = "島で生き延びるためのヒントが書かれています。";
-      elements.collectButton.disabled = false;
-      elements.collectButton.textContent = "Enterで看板を読む";
-      elements.collectButton.onclick = onReadSign;
+      elements.mobileActionButton.textContent = "読む";
+      elements.mobileActionButton.onclick = null;
+      elements.mobileActionButton.onpointerup = (event) => {
+        event.preventDefault();
+        onReadSign();
+      };
+      elements.mobileActionButton.classList.remove("hidden");
+      elements.mobileActionButton.classList.add("is-ready");
       return;
     }
 
     if (!plant) {
+      elements.plantInspector.classList.add("hidden");
       elements.plantInspector.classList.add("empty");
       elements.plantImageBox.classList.add("hidden");
       elements.plantImageBox.textContent = "";
       elements.plantName.textContent = "近くに採取可能な植物はありません";
       elements.plantDescription.textContent = "植物に近づくと調査できます。";
-      elements.collectButton.disabled = true;
-      elements.collectButton.textContent = "Enterで採取";
       return;
     }
 
     elements.plantInspector.classList.remove("empty");
+    elements.plantInspector.classList.remove("hidden");
     elements.plantImageBox.classList.remove("hidden");
     renderPlantImage(elements.plantImageBox, plant.data.name);
     elements.plantName.textContent = plant.data.name;
     elements.plantDescription.textContent =
       plant.data.note || "説明はまだ登録されていません。";
-    elements.collectButton.disabled = false;
-    elements.collectButton.textContent = "Enterで採取";
-    elements.collectButton.onclick = onCollect;
+    elements.mobileActionButton.textContent = "採取";
+    elements.mobileActionButton.onclick = null;
+    elements.mobileActionButton.onpointerup = (event) => {
+      event.preventDefault();
+      onCollect();
+    };
+    elements.mobileActionButton.classList.remove("hidden");
+    elements.mobileActionButton.classList.add("is-ready");
   }
 
   function renderPlantImage(container, name) {

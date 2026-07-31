@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const MAP_WIDTH = 48;
@@ -39,6 +39,10 @@
     3: { famine: 5, poison: 5, native: 1 },
     1: { famine: 3, poison: 1, native: 0 },
   };
+  const STICK_DEAD_ZONE = 22;
+  const STICK_MAX_OFFSET = 38;
+  const STICK_INITIAL_REPEAT_DELAY_MS = 360;
+  const STICK_REPEAT_MS = 230;
 
   const state = {
     day: 1,
@@ -60,6 +64,16 @@
     phase: "title",
     gameEnded: false,
   };
+  const stickState = {
+    active: false,
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    maxDistance: 0,
+    currentDirection: null,
+    moveTimer: null,
+  };
+  let tutorialHintTimer = null;
 
   function init() {
     SurvivalUI.cacheElements();
@@ -69,7 +83,8 @@
       "click",
       enterNightPhase,
     );
-    window.addEventListener("keydown", handleKeyDown);
+    setupTouchControls();
+    setupTutorialTap();
     SurvivalUI.showScreen("title");
   }
 
@@ -88,6 +103,7 @@
       state.tutorialSlideIndex,
       TUTORIAL_SLIDES.length,
     );
+    showTutorialTapHint();
     SurvivalUI.showScreen("tutorial");
   }
 
@@ -106,6 +122,220 @@
     updateNearbyPlant();
     updateNearbySign();
     render();
+  }
+
+  function setupTouchControls() {
+    const gameScreen = SurvivalUI.elements.gameScreen;
+    gameScreen.addEventListener("pointerdown", handleStickPointerDown);
+    gameScreen.addEventListener("pointermove", handleStickPointerMove);
+    gameScreen.addEventListener("pointerup", handleStickPointerUp);
+    gameScreen.addEventListener("pointercancel", handleStickPointerUp);
+  }
+
+  function setupTutorialTap() {
+    const tutorialScreen = SurvivalUI.elements.tutorialScreen;
+    tutorialScreen.addEventListener("pointerup", handleTutorialTap);
+  }
+
+  function isTouchLayout() {
+    return window.matchMedia(
+      "(hover: none), (pointer: coarse), (max-width: 980px)",
+    ).matches;
+  }
+
+  function handleStickPointerDown(event) {
+    if (
+      state.phase !== "explore" ||
+      state.gameEnded ||
+      stickState.active ||
+      !isTouchLayout()
+    ) {
+      return;
+    }
+
+    if (
+      event.target.closest(
+        "button, a, aside, .side-panel, .map-guide, .mobile-action-button",
+      )
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    stickState.active = true;
+    stickState.pointerId = event.pointerId;
+    stickState.startX = event.clientX;
+    stickState.startY = event.clientY;
+    stickState.maxDistance = 0;
+    stickState.currentDirection = null;
+    stopStickMovement();
+    SurvivalUI.elements.virtualStick.style.left = `${event.clientX}px`;
+    SurvivalUI.elements.virtualStick.style.top = `${event.clientY}px`;
+    SurvivalUI.elements.virtualStickKnob.style.transform = "translate(-50%, -50%)";
+    SurvivalUI.elements.virtualStick.classList.remove("hidden");
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleStickPointerMove(event) {
+    if (!stickState.active || stickState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    const dx = event.clientX - stickState.startX;
+    const dy = event.clientY - stickState.startY;
+    const distance = Math.hypot(dx, dy);
+    stickState.maxDistance = Math.max(stickState.maxDistance, distance);
+    const limitedDistance = Math.min(distance, STICK_MAX_OFFSET);
+    const angle = Math.atan2(dy, dx);
+    const knobX = Math.cos(angle) * limitedDistance;
+    const knobY = Math.sin(angle) * limitedDistance;
+    SurvivalUI.elements.virtualStickKnob.style.transform =
+      `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+
+    if (distance < STICK_DEAD_ZONE) {
+      stickState.currentDirection = null;
+      stopStickMovement();
+      return;
+    }
+
+    const direction = getStickDirection(dx, dy);
+    if (direction !== stickState.currentDirection) {
+      const wasIdle = !stickState.currentDirection;
+      stickState.currentDirection = direction;
+      if (wasIdle) {
+        moveByDirection(direction);
+        scheduleStickMovement(STICK_INITIAL_REPEAT_DELAY_MS);
+      }
+      return;
+    }
+
+    if (!stickState.moveTimer) {
+      scheduleStickMovement(STICK_REPEAT_MS);
+    }
+  }
+
+  function handleStickPointerUp(event) {
+    if (!stickState.active || stickState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const shouldUseContextAction = stickState.maxDistance < 10;
+    stickState.active = false;
+    stickState.pointerId = null;
+    stickState.maxDistance = 0;
+    stickState.currentDirection = null;
+    stopStickMovement();
+    SurvivalUI.elements.virtualStick.classList.add("hidden");
+    SurvivalUI.elements.virtualStickKnob.style.transform = "translate(-50%, -50%)";
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (shouldUseContextAction) {
+      useContextAction();
+    }
+  }
+
+  function useContextAction() {
+    if (state.phase !== "explore" || state.gameEnded) {
+      return;
+    }
+
+    if (state.nearbySign) {
+      readNearbySign();
+      return;
+    }
+
+    if (state.nearbyPlant && state.collected.length < MAX_COLLECT) {
+      collectNearbyPlant();
+    }
+  }
+
+  function scheduleStickMovement(delay) {
+    stopStickMovement();
+    stickState.moveTimer = window.setTimeout(() => {
+      if (!stickState.active || !stickState.currentDirection) {
+        stopStickMovement();
+        return;
+      }
+      moveByDirection(stickState.currentDirection);
+      scheduleStickMovement(STICK_REPEAT_MS);
+    }, delay);
+  }
+
+  function stopStickMovement() {
+    if (!stickState.moveTimer) {
+      return;
+    }
+
+    window.clearTimeout(stickState.moveTimer);
+    stickState.moveTimer = null;
+  }
+
+  function moveByDirection(direction) {
+    const moves = {
+      up: [0, -1],
+      upRight: [1, -1],
+      down: [0, 1],
+      downRight: [1, 1],
+      left: [-1, 0],
+      downLeft: [-1, 1],
+      right: [1, 0],
+      upLeft: [-1, -1],
+    };
+    const move = moves[direction];
+    if (move) {
+      movePlayer(move[0], move[1]);
+    }
+  }
+
+  function getStickDirection(dx, dy) {
+    const angle = Math.atan2(dy, dx);
+    const eighth = Math.PI / 4;
+    const index = Math.round(angle / eighth);
+    const directions = {
+      "-4": "left",
+      "-3": "upLeft",
+      "-2": "up",
+      "-1": "upRight",
+      0: "right",
+      1: "downRight",
+      2: "down",
+      3: "downLeft",
+      4: "left",
+    };
+    return directions[index];
+  }
+
+  function handleTutorialTap(event) {
+    if (state.phase !== "tutorial") {
+      return;
+    }
+
+    event.preventDefault();
+    hideTutorialTapHint();
+    if (event.clientX >= window.innerWidth / 2) {
+      showNextTutorialSlide();
+      return;
+    }
+    showPreviousTutorialSlide();
+  }
+
+  function showTutorialTapHint() {
+    window.clearTimeout(tutorialHintTimer);
+    SurvivalUI.elements.tutorialTapHint.classList.remove(
+      "hidden",
+      "is-dismissing",
+    );
+    tutorialHintTimer = window.setTimeout(hideTutorialTapHint, 2800);
+  }
+
+  function hideTutorialTapHint() {
+    window.clearTimeout(tutorialHintTimer);
+    SurvivalUI.elements.tutorialTapHint.classList.add("is-dismissing");
+    tutorialHintTimer = window.setTimeout(() => {
+      SurvivalUI.elements.tutorialTapHint.classList.add("hidden");
+    }, 420);
   }
 
   function createIslandTiles() {
@@ -339,77 +569,6 @@
     shuffle(preferredTiles);
     shuffle(grassTiles);
     return preferredTiles[0] || grassTiles[0] || null;
-  }
-
-  function handleKeyDown(event) {
-    if (state.phase === "title" && event.key === "Enter" && !state.gameEnded) {
-      event.preventDefault();
-      startGame();
-      return;
-    }
-
-    if (state.phase === "tutorial") {
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        showNextTutorialSlide();
-        return;
-      }
-
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        showPreviousTutorialSlide();
-        return;
-      }
-    }
-
-    if (
-      state.phase === "dayResult" &&
-      (event.key === "Enter" || event.key === " " || event.code === "Space")
-    ) {
-      event.preventDefault();
-      continueAfterDayResult();
-      return;
-    }
-
-    if (state.phase !== "explore" || state.gameEnded) {
-      return;
-    }
-
-    if (event.key === "Enter") {
-      if (state.nearbySign) {
-        event.preventDefault();
-        readNearbySign();
-        return;
-      }
-      if (state.nearbyPlant && state.collected.length < MAX_COLLECT) {
-        event.preventDefault();
-        collectNearbyPlant();
-      }
-      return;
-    }
-
-    const keyMap = {
-      ArrowUp: [0, -1],
-      ArrowDown: [0, 1],
-      ArrowLeft: [-1, 0],
-      ArrowRight: [1, 0],
-      w: [0, -1],
-      W: [0, -1],
-      s: [0, 1],
-      S: [0, 1],
-      a: [-1, 0],
-      A: [-1, 0],
-      d: [1, 0],
-      D: [1, 0],
-    };
-
-    const move = keyMap[event.key];
-    if (!move) {
-      return;
-    }
-
-    event.preventDefault();
-    movePlayer(move[0], move[1]);
   }
 
   function showNextTutorialSlide() {
@@ -731,20 +890,30 @@
     );
     SurvivalUI.renderBag(state.collected);
     if (state.signMessageVisible) {
-      SurvivalUI.elements.phaseText.textContent = SIGN_MESSAGE;
+      showPhaseText(SIGN_MESSAGE);
       return;
     }
     if (state.nearbyPlant) {
-      SurvivalUI.elements.phaseText.textContent =
-        state.nearbyPlant.data.note || "説明はまだ登録されていません。";
+      showPhaseText(
+        state.nearbyPlant.data.note || "説明はまだ登録されていません。",
+      );
       return;
     }
     if (state.nearbySign) {
-      SurvivalUI.elements.phaseText.textContent =
-        "看板があります。Enterで内容を読めます。";
+      showPhaseText("看板があります。タップで内容を読めます。");
       return;
     }
-    SurvivalUI.elements.phaseText.textContent = `Day ${state.day}。植物を最大3種類まで採取できます。`;
+    hidePhaseText();
+  }
+
+  function showPhaseText(text) {
+    SurvivalUI.elements.phaseText.textContent = text;
+    SurvivalUI.elements.phaseText.parentElement.classList.remove("hidden");
+  }
+
+  function hidePhaseText() {
+    SurvivalUI.elements.phaseText.textContent = "";
+    SurvivalUI.elements.phaseText.parentElement.classList.add("hidden");
   }
 
   function isInsideMap(x, y) {

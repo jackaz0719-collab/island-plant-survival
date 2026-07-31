@@ -24,7 +24,6 @@
           <p>植物を見きわめ、採って、食べる。5日間生き残れ。</p>
           <button id="startButton" class="primary-button">ゲーム開始</button>
           <div class="start-guide">
-            <p>⭐矢印キー / WASD で移動</p>
             <p>⭐1日最大3種類まで採取できます</p>
             <p>⭐救荒植物を選択して食いつなごう。</p>
             <p>
@@ -43,9 +42,11 @@
             alt="チュートリアルスライド"
           />
         </div>
+        <div id="tutorialTapHint" class="tutorial-tap-hint">
+          <span>右側タップで次へ</span>
+        </div>
         <div class="tutorial-status">
           <span id="tutorialPageLabel">1 / 7</span>
-          <span>← / →</span>
         </div>
       </section>
 
@@ -72,6 +73,9 @@
         <main class="play-layout">
           <section class="map-panel" aria-label="無人島マップ">
             <div id="map" class="map"></div>
+            <div id="virtualStick" class="virtual-stick hidden" aria-hidden="true">
+              <span id="virtualStickKnob" class="virtual-stick-knob"></span>
+            </div>
           </section>
 
           <section class="map-guide" aria-label="操作ガイド">
@@ -94,12 +98,17 @@
               <div id="plantImageBox" class="plant-image-box hidden"></div>
               <h3 id="plantName">近くに採取可能な植物はありません</h3>
               <p id="plantDescription">植物に近づくと調査できます。</p>
-              <button id="collectButton" class="secondary-button" disabled>
-                Enterで採取
-              </button>
             </div>
           </aside>
+          <button
+            id="mobileActionButton"
+            class="mobile-action-button hidden"
+            type="button"
+          >
+            採取
+          </button>
         </main>
+        <div class="landscape-hint" aria-hidden="true">横向き推奨</div>
       </section>
 
       <section id="nightScreen" class="screen night-screen hidden">
@@ -119,7 +128,6 @@
             <div id="dayResultImageBox" class="day-result-image-box"></div>
             <div id="dayResultDetails" class="day-result-details"></div>
           </div>
-          <p class="day-result-guide">Enter または Space キーで次へ</p>
           <button id="dayResultContinueButton" class="primary-button">
             次へ
           </button>
