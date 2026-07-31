@@ -93,10 +93,12 @@
     SurvivalUI.cacheElements();
     SurvivalUI.setupImagePreview();
     SurvivalUI.elements.startButton.dataset.sound = "start";
+    SurvivalUI.elements.startButton.addEventListener("pointerdown", () => {
+      SurvivalUI.playStartSound();
+    });
     SurvivalUI.setupButtonSound();
     SurvivalUI.setupDayResultContinueControls();
     SurvivalUI.elements.startButton.addEventListener("click", () => {
-      SurvivalUI.playStartSound();
       startGame();
     });
     SurvivalUI.elements.restartButton.addEventListener("click", startGame);
