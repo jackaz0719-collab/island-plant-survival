@@ -16,6 +16,10 @@
     clear: new Audio("Audio/clear.mp3"),
     gameOver: new Audio("Audio/gameover.mp3"),
   };
+  const startSound = new Audio("Audio/start.mp3");
+  startSound.preload = "auto";
+  startSound.volume = 0.85;
+  startSound.load();
   Object.values(resultSounds).forEach((sound) => {
     sound.preload = "auto";
     sound.volume = 0.85;
@@ -132,6 +136,10 @@
   function playResultSound(win) {
     stopResultSounds();
     playSound(win ? resultSounds.clear : resultSounds.gameOver);
+  }
+
+  function playStartSound() {
+    playSound(startSound);
   }
 
   function playSound(sound) {
@@ -460,6 +468,7 @@
     setupButtonSound,
     stopResultSounds,
     playResultSound,
+    playStartSound,
     showScreen,
     renderTutorialSlide,
     updateHud,
