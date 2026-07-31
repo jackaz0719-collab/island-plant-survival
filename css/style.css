@@ -802,6 +802,9 @@ button {
 .night-screen,
 .day-result-screen,
 .result-screen {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -815,6 +818,10 @@ button {
 }
 
 .day-result-screen {
+  overflow: hidden;
+}
+
+.result-screen {
   overflow: hidden;
 }
 
@@ -1623,8 +1630,9 @@ button {
   }
 
   .mobile-action-button {
-    right: 20px;
-    bottom: 24px;
+    left: 18px;
+    right: auto;
+    bottom: 188px;
     min-width: 106px;
     min-height: 54px;
     z-index: 19;

@@ -182,6 +182,7 @@
       elements.mobileActionButton.onclick = null;
       elements.mobileActionButton.onpointerup = (event) => {
         event.preventDefault();
+        event.stopPropagation();
         onReadSign();
       };
       elements.mobileActionButton.classList.remove("hidden");
@@ -214,6 +215,7 @@
     elements.mobileActionButton.onclick = null;
     elements.mobileActionButton.onpointerup = (event) => {
       event.preventDefault();
+      event.stopPropagation();
       onCollect();
     };
     elements.mobileActionButton.classList.remove("hidden");

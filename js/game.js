@@ -273,6 +273,16 @@
     stickState.moveTimer = null;
   }
 
+  function resetStickControls() {
+    stickState.active = false;
+    stickState.pointerId = null;
+    stickState.maxDistance = 0;
+    stickState.currentDirection = null;
+    stopStickMovement();
+    SurvivalUI.elements.virtualStick.classList.add("hidden");
+    SurvivalUI.elements.virtualStickKnob.style.transform = "translate(-50%, -50%)";
+  }
+
   function moveByDirection(direction) {
     const moves = {
       up: [0, -1],
@@ -682,6 +692,7 @@
     }
 
     state.phase = "night";
+    resetStickControls();
     if (state.collected.length === 0) {
       resolveNight(null);
       return;
@@ -698,6 +709,7 @@
 
     state.pendingDayResult = createDayResult(eatenPlant);
     state.phase = "dayResult";
+    resetStickControls();
     SurvivalUI.renderDayResult(state.pendingDayResult, continueAfterDayResult);
     SurvivalUI.showScreen("dayResult");
   }
@@ -876,6 +888,7 @@
   function endGame(win, text) {
     state.gameEnded = true;
     state.phase = "result";
+    resetStickControls();
     SurvivalUI.renderResult(win, text);
     SurvivalUI.showScreen("result");
   }
