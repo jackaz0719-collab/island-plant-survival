@@ -21,6 +21,9 @@
   const playerStart = { x: 24, y: 16 };
   const SIGN_MESSAGE =
     "救荒植物を食べて夜を越すのだ！それ以外を食べてしまうとおなか壊してしまうぞ。出来るだけ外来種は減らすことをおすすめするぞ。";
+  const HOUSE_MESSAGES = [
+    "ホッホッホ。\nヒントがもらえると思ったかの？\n残念じゃったな！",
+  ];
   const blockedTiles = new Set([
     "sea",
     "river",
@@ -58,7 +61,9 @@
     collected: [],
     nearbyPlant: null,
     nearbySign: null,
+    nearbyCamp: null,
     signMessageVisible: false,
+    campMessage: null,
     pendingDayResult: null,
     tutorialSlideIndex: 0,
     phase: "title",
@@ -97,7 +102,9 @@
     state.hp = INITIAL_HP;
     state.ecosystem = INITIAL_ECOSYSTEM;
     state.nearbySign = null;
+    state.nearbyCamp = null;
     state.signMessageVisible = false;
+    state.campMessage = null;
     state.pendingDayResult = null;
     state.tutorialSlideIndex = 0;
     state.phase = "tutorial";
@@ -121,10 +128,12 @@
     state.player = { ...playerStart };
     state.collected = [];
     state.signMessageVisible = false;
+    state.campMessage = null;
     state.tiles = createIslandTiles();
     state.plantsOnMap = createDailyPlants();
     updateNearbyPlant();
     updateNearbySign();
+    updateNearbyCamp();
     render();
   }
 
@@ -247,6 +256,11 @@
 
     if (state.nearbySign) {
       readNearbySign();
+      return;
+    }
+
+    if (state.nearbyCamp) {
+      readNearbyCamp();
       return;
     }
 
@@ -628,6 +642,7 @@
     state.player = next;
     updateNearbyPlant();
     updateNearbySign();
+    updateNearbyCamp();
     render();
   }
 
@@ -670,6 +685,37 @@
     }
 
     state.signMessageVisible = true;
+    state.campMessage = null;
+    render();
+  }
+
+  function updateNearbyCamp() {
+    state.nearbyCamp = null;
+
+    for (let y = 0; y < MAP_HEIGHT; y += 1) {
+      for (let x = 0; x < MAP_WIDTH; x += 1) {
+        if (state.tiles[y][x] !== "camp") {
+          continue;
+        }
+        const distance =
+          Math.abs(x - state.player.x) + Math.abs(y - state.player.y);
+        if (distance <= 1) {
+          state.nearbyCamp = { x, y };
+          return;
+        }
+      }
+    }
+
+    state.campMessage = null;
+  }
+
+  function readNearbyCamp() {
+    if (!state.nearbyCamp) {
+      return;
+    }
+
+    state.signMessageVisible = false;
+    state.campMessage = randomItem(HOUSE_MESSAGES);
     render();
   }
 
@@ -905,10 +951,16 @@
       collectNearbyPlant,
       state.nearbySign,
       readNearbySign,
+      state.nearbyCamp,
+      readNearbyCamp,
     );
     SurvivalUI.renderBag(state.collected);
     if (state.signMessageVisible) {
       showPhaseText(SIGN_MESSAGE);
+      return;
+    }
+    if (state.campMessage) {
+      showPhaseText(state.campMessage);
       return;
     }
     if (state.nearbyPlant) {
@@ -919,6 +971,10 @@
     }
     if (state.nearbySign) {
       showPhaseText("看板があります。タップで内容を読めます。");
+      return;
+    }
+    if (state.nearbyCamp) {
+      showPhaseText("家があります。タップで内容を読めます。");
       return;
     }
     hidePhaseText();
@@ -974,6 +1030,10 @@
       [items[i], items[j]] = [items[j], items[i]];
     }
     return items;
+  }
+
+  function randomItem(items) {
+    return items[Math.floor(Math.random() * items.length)];
   }
 
   document.addEventListener("DOMContentLoaded", init);

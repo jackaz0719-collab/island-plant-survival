@@ -118,9 +118,13 @@
           state.nearbySign &&
           state.nearbySign.x === x &&
           state.nearbySign.y === y;
+        const isNearbyCamp =
+          state.nearbyCamp &&
+          state.nearbyCamp.x === x &&
+          state.nearbyCamp.y === y;
 
         tile.className = makeTileClass(state.tiles[y][x]);
-        if (isNearby || isNearbySign) {
+        if (isNearby || isNearbySign || isNearbyCamp) {
           tile.classList.add("nearby");
         }
 
@@ -186,7 +190,7 @@
     return element && !element.classList.contains("hidden");
   }
 
-  function renderInspector(plant, onCollect, sign, onReadSign) {
+  function renderInspector(plant, onCollect, sign, onReadSign, camp, onReadCamp) {
     elements.mobileActionButton.onclick = null;
     elements.mobileActionButton.onpointerup = null;
     elements.mobileActionButton.classList.add("hidden");
@@ -206,6 +210,26 @@
         event.preventDefault();
         event.stopPropagation();
         onReadSign();
+      };
+      elements.mobileActionButton.classList.remove("hidden");
+      elements.mobileActionButton.classList.add("is-ready");
+      return;
+    }
+
+    if (camp) {
+      elements.plantInspector.classList.remove("hidden");
+      elements.plantInspector.classList.add("empty");
+      elements.plantImageBox.classList.add("hidden");
+      elements.plantImageBox.textContent = "";
+      elements.plantImageBox.onclick = null;
+      elements.plantName.textContent = "家";
+      elements.plantDescription.textContent = "何か書かれているようです。";
+      elements.mobileActionButton.textContent = "読む";
+      elements.mobileActionButton.onclick = null;
+      elements.mobileActionButton.onpointerup = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onReadCamp();
       };
       elements.mobileActionButton.classList.remove("hidden");
       elements.mobileActionButton.classList.add("is-ready");
