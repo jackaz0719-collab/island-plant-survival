@@ -2,9 +2,16 @@
   "use strict";
 
   const elements = {};
+  const mapRenderCache = {
+    width: 0,
+    height: 0,
+    tiles: [],
+    tileTypes: [],
+  };
   const buttonSound = new Audio("Audio/button.mp3");
   buttonSound.preload = "auto";
   buttonSound.volume = 0.75;
+  buttonSound.load();
   const resultSounds = {
     clear: new Audio("Audio/clear.mp3"),
     gameOver: new Audio("Audio/gameover.mp3"),
@@ -12,6 +19,7 @@
   Object.values(resultSounds).forEach((sound) => {
     sound.preload = "auto";
     sound.volume = 0.85;
+    sound.load();
   });
   let buttonSoundSetup = false;
   let lastButtonSoundTime = 0;
@@ -86,6 +94,22 @@
         true,
       );
     });
+
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.repeat || !isActionKey(event)) {
+          return;
+        }
+
+        playButtonSound();
+      },
+      true,
+    );
+  }
+
+  function isActionKey(event) {
+    return event.key === "Enter" || event.key === " " || event.code === "Space";
   }
 
   function playButtonSound() {
@@ -139,12 +163,12 @@
   }
 
   function renderMap(state) {
-    const fragment = document.createDocumentFragment();
-    elements.map.textContent = "";
+    ensureMapTiles(state);
 
     for (let y = 0; y < state.mapHeight; y += 1) {
       for (let x = 0; x < state.mapWidth; x += 1) {
-        const tile = document.createElement("div");
+        const index = y * state.mapWidth + x;
+        const tile = mapRenderCache.tiles[index];
         const plant = state.plantsOnMap.find(
           (item) => !item.collected && item.x === x && item.y === y,
         );
@@ -167,6 +191,10 @@
           tile.classList.add("nearby");
         }
 
+        if (tile.firstChild) {
+          tile.replaceChildren();
+        }
+
         if (plant) {
           const plantEntity = document.createElement("span");
           plantEntity.className = "entity plant";
@@ -180,13 +208,55 @@
           player.title = "プレイヤー";
           tile.appendChild(player);
         }
+      }
+    }
 
+    centerMapOnPlayer(state);
+  }
+
+  function ensureMapTiles(state) {
+    const needsRebuild =
+      mapRenderCache.width !== state.mapWidth ||
+      mapRenderCache.height !== state.mapHeight ||
+      mapRenderCache.tileTypes.length !== state.mapWidth * state.mapHeight ||
+      hasTileTypeChanges(state);
+
+    if (!needsRebuild) {
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    mapRenderCache.width = state.mapWidth;
+    mapRenderCache.height = state.mapHeight;
+    mapRenderCache.tiles = [];
+    mapRenderCache.tileTypes = [];
+    elements.map.textContent = "";
+
+    for (let y = 0; y < state.mapHeight; y += 1) {
+      for (let x = 0; x < state.mapWidth; x += 1) {
+        const tile = document.createElement("div");
+        const tileType = state.tiles[y][x];
+        tile.className = makeTileClass(tileType);
+        mapRenderCache.tiles.push(tile);
+        mapRenderCache.tileTypes.push(tileType);
         fragment.appendChild(tile);
       }
     }
 
     elements.map.appendChild(fragment);
-    centerMapOnPlayer(state);
+  }
+
+  function hasTileTypeChanges(state) {
+    for (let y = 0; y < state.mapHeight; y += 1) {
+      for (let x = 0; x < state.mapWidth; x += 1) {
+        const index = y * state.mapWidth + x;
+        if (mapRenderCache.tileTypes[index] !== state.tiles[y][x]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   function centerMapOnPlayer(state) {
