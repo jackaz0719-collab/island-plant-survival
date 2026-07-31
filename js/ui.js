@@ -9,6 +9,9 @@
     clear: new Audio("Audio/clear.mp3"),
     gameOver: new Audio("Audio/gameover.mp3"),
   };
+  const startSound = new Audio("Audio/start.mp3");
+  startSound.preload = "auto";
+  startSound.volume = 0.85;
   Object.values(resultSounds).forEach((sound) => {
     sound.preload = "auto";
     sound.volume = 0.85;
@@ -295,6 +298,10 @@
             return;
           }
 
+          if (button.dataset.sound === "start") {
+            return;
+          }
+
           playButtonSound();
         },
         true,
@@ -395,6 +402,10 @@
     stopResultSounds();
     const sound = win ? resultSounds.clear : resultSounds.gameOver;
     playSound(sound);
+  }
+
+  function playStartSound() {
+    playSound(startSound);
   }
 
   function showImagePreview(src, alt) {
@@ -543,6 +554,7 @@
     setupDayResultContinueControls,
     stopResultSounds,
     playResultSound,
+    playStartSound,
     showScreen,
     renderTutorialSlide,
     updateHud,
