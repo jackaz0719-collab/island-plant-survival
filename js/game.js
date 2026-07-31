@@ -22,7 +22,15 @@
   const SIGN_MESSAGE =
     "救荒植物を食べて夜を越すのだ！それ以外を食べてしまうとおなか壊してしまうぞ。出来るだけ外来種は減らすことをおすすめするぞ。";
   const HOUSE_MESSAGES = [
-    "ホッホッホ。\nヒントがもらえると思ったかの？\n残念じゃったな！",
+    "ホッホッホ。\nヒントがもらえると思ったかの？\n残念じゃったな！\nちなみに、また読めば別のメモが出るかもしれんぞ。",
+    "ホッホッホ。\nその顔、完全にヒント待ちじゃったな。\n甘いのう。",
+    "ふむふむ。\n今のところ、なかなか迷っておるな。\nまあ、教えんがの。",
+    "ホッホッホ。\n家まで来た努力は認めよう。\nそれだけじゃ。",
+    "おお、よく来たのう。\nではヒントを授けよう。\n……と思ったが、やめた。",
+    "ワシを頼るでない。\n島で生きるとは、そういうことじゃ。\nたぶんの。",
+    "ホッホッホ。\n今の選択、なかなか危ういぞ。\n何が危ういかは言わんがな。",
+    "なるほどのう。\n君は今、答えを求めておる。\nワシは今、沈黙を選んでおる。",
+    "ふむ。\nここまで読むとは、なかなか物好きじゃのう。\n島でもそのしぶとさを忘れるでないぞ。",
   ];
   const blockedTiles = new Set([
     "sea",
@@ -184,7 +192,8 @@
     stopStickMovement();
     SurvivalUI.elements.virtualStick.style.left = `${event.clientX}px`;
     SurvivalUI.elements.virtualStick.style.top = `${event.clientY}px`;
-    SurvivalUI.elements.virtualStickKnob.style.transform = "translate(-50%, -50%)";
+    SurvivalUI.elements.virtualStickKnob.style.transform =
+      "translate(-50%, -50%)";
     SurvivalUI.elements.virtualStick.classList.remove("hidden");
     event.currentTarget.setPointerCapture(event.pointerId);
   }
@@ -203,8 +212,7 @@
     const angle = Math.atan2(dy, dx);
     const knobX = Math.cos(angle) * limitedDistance;
     const knobY = Math.sin(angle) * limitedDistance;
-    SurvivalUI.elements.virtualStickKnob.style.transform =
-      `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+    SurvivalUI.elements.virtualStickKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
 
     if (distance < STICK_DEAD_ZONE) {
       stickState.currentDirection = null;
@@ -240,7 +248,8 @@
     stickState.currentDirection = null;
     stopStickMovement();
     SurvivalUI.elements.virtualStick.classList.add("hidden");
-    SurvivalUI.elements.virtualStickKnob.style.transform = "translate(-50%, -50%)";
+    SurvivalUI.elements.virtualStickKnob.style.transform =
+      "translate(-50%, -50%)";
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -297,7 +306,8 @@
     stickState.currentDirection = null;
     stopStickMovement();
     SurvivalUI.elements.virtualStick.classList.add("hidden");
-    SurvivalUI.elements.virtualStickKnob.style.transform = "translate(-50%, -50%)";
+    SurvivalUI.elements.virtualStickKnob.style.transform =
+      "translate(-50%, -50%)";
   }
 
   function moveByDirection(direction) {
@@ -974,7 +984,9 @@
       return;
     }
     if (state.nearbyCamp) {
-      showPhaseText("家があります。タップで内容を読めます。");
+      showPhaseText(
+        "家に何枚も博士のメモが残されています。タップで内容を読めます。",
+      );
       return;
     }
     hidePhaseText();
